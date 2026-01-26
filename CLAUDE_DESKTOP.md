@@ -43,7 +43,7 @@ npm run dev
         "--stdio",
         "http://localhost:8789/mcp",
         "--headers",
-        "x-wordpress-url=https://wp.missmanga.org",
+        "x-wordpress-url=https://your-wordpress-site.com",
         "--headers",
         "x-wordpress-username=YOUR_USERNAME",
         "--headers",
@@ -78,7 +78,7 @@ npm run dev
         "--stdio",
         "https://wordpress-mcp.nodeflow.workers.dev/mcp",
         "--headers",
-        "x-wordpress-url=https://wp.missmanga.org",
+        "x-wordpress-url=https://your-wordpress-site.com",
         "--headers",
         "x-wordpress-username=YOUR_USERNAME",
         "--headers",
@@ -207,8 +207,8 @@ curl https://wordpress-mcp.nodeflow.workers.dev/health
 1. Verify username and password
 2. **Remove ALL spaces** from Application Password
 3. Example:
-   - WordPress shows: `cUAn CKZ1 u5DN IkpS bMra FCWL`
-   - Use in config: `cUAnCKZ1u5DNIkpSbMraFCWL`
+   - WordPress shows: `aBcD eFgH iJkL mNoP qRsT uVwX`
+   - Use in config: `aBcDeFgHiJkLmNoPqRsTuVwX`
 
 ### Issue 4: "Tool not found"
 

@@ -142,11 +142,11 @@ Add this:
         "--stdio",
         "http://localhost:8789/mcp",
         "--headers",
-        "x-wordpress-url=https://wp.example.com",
+        "x-wordpress-url=https://your-wordpress-site.com",
         "--headers",
         "x-wordpress-username=YOUR_USERNAME",
         "--headers",
-        "x-wordpress-password=YOUR_APP_PASSWORD"
+        "x-wordpress-password=YOUR_APP_PASSWORD_WITHOUT_SPACES"
       ]
     }
   }

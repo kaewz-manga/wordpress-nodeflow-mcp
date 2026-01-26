@@ -8,11 +8,11 @@
         "--stdio",
         "http://localhost:8789/mcp",
         "--headers",
-        "x-wordpress-url=https://wp.missmanga.org",
+        "x-wordpress-url=https://your-wordpress-site.com",
         "--headers",
-        "x-wordpress-username=kaewz",
+        "x-wordpress-username=YOUR_USERNAME",
         "--headers",
-        "x-wordpress-password=YOUR_APP_PASSWORD_HERE"
+        "x-wordpress-password=YOUR_APP_PASSWORD_WITHOUT_SPACES"
       ],
       "env": {
         "NODE_ENV": "production"
@@ -26,11 +26,11 @@
         "--stdio",
         "https://wordpress-mcp.nodeflow.workers.dev/mcp",
         "--headers",
-        "x-wordpress-url=https://wp.missmanga.org",
+        "x-wordpress-url=https://your-wordpress-site.com",
         "--headers",
-        "x-wordpress-username=kaewz",
+        "x-wordpress-username=YOUR_USERNAME",
         "--headers",
-        "x-wordpress-password=YOUR_APP_PASSWORD_HERE"
+        "x-wordpress-password=YOUR_APP_PASSWORD_WITHOUT_SPACES"
       ],
       "env": {
         "NODE_ENV": "production"
