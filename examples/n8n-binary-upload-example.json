@@ -47,15 +47,15 @@
             },
             {
               "name": "x-wordpress-url",
-              "value": "https://wp.missmanga.org"
+              "value": "https://your-wordpress-site.com"
             },
             {
               "name": "x-wordpress-username",
-              "value": "kaewz"
+              "value": "YOUR_USERNAME"
             },
             {
               "name": "x-wordpress-password",
-              "value": "cUAnCKZ1u5DNIkpSbMraFCWL"
+              "value": "YOUR_APP_PASSWORD_WITHOUT_SPACES"
             }
           ]
         },

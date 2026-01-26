@@ -3,12 +3,12 @@
 
 Write-Host "`n=== Testing wordpress-nodeflow-mcp New Tools ===" -ForegroundColor Cyan
 Write-Host "Server: http://localhost:8789" -ForegroundColor Gray
-Write-Host "WordPress: https://wp.missmanga.org`n" -ForegroundColor Gray
+Write-Host "WordPress: https://your-wordpress-site.com`n" -ForegroundColor Gray
 
 $baseUrl = "http://localhost:8789/mcp"
-$wpUrl = "https://wp.missmanga.org"
-$wpUser = "kaewz"
-$wpPass = "cUAnCKZ1u5DNIkpSbMraFCWL"
+$wpUrl = "https://your-wordpress-site.com"
+$wpUser = "YOUR_USERNAME"
+$wpPass = "YOUR_APP_PASSWORD_WITHOUT_SPACES"
 
 $headers = @{
     "Content-Type" = "application/json"

@@ -29,9 +29,9 @@ curl -s -X POST http://localhost:8789/mcp \
 ```bash
 curl -s -X POST http://localhost:8789/mcp \
   -H "Content-Type: application/json" \
-  -H "x-wordpress-url: https://wp.missmanga.org" \
-  -H "x-wordpress-username: kaewz" \
-  -H "x-wordpress-password: cUAnCKZ1u5DNIkpSbMraFCWL" \
+  -H "x-wordpress-url: https://your-wordpress-site.com" \
+  -H "x-wordpress-username: YOUR_USERNAME" \
+  -H "x-wordpress-password: YOUR_APP_PASSWORD_WITHOUT_SPACES" \
   -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"wp_get_categories","arguments":{"per_page":5}}}'
 ```
 
@@ -39,9 +39,9 @@ curl -s -X POST http://localhost:8789/mcp \
 ```bash
 curl -s -X POST http://localhost:8789/mcp \
   -H "Content-Type: application/json" \
-  -H "x-wordpress-url: https://wp.missmanga.org" \
-  -H "x-wordpress-username: kaewz" \
-  -H "x-wordpress-password: cUAnCKZ1u5DNIkpSbMraFCWL" \
+  -H "x-wordpress-url: https://your-wordpress-site.com" \
+  -H "x-wordpress-username: YOUR_USERNAME" \
+  -H "x-wordpress-password: YOUR_APP_PASSWORD_WITHOUT_SPACES" \
   -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"wp_create_category","arguments":{"name":"Test Category Auto","description":"Created by automated test"}}}'
 ```
 
@@ -49,9 +49,9 @@ curl -s -X POST http://localhost:8789/mcp \
 ```bash
 curl -s -X POST http://localhost:8789/mcp \
   -H "Content-Type: application/json" \
-  -H "x-wordpress-url: https://wp.missmanga.org" \
-  -H "x-wordpress-username: kaewz" \
-  -H "x-wordpress-password: cUAnCKZ1u5DNIkpSbMraFCWL" \
+  -H "x-wordpress-url: https://your-wordpress-site.com" \
+  -H "x-wordpress-username: YOUR_USERNAME" \
+  -H "x-wordpress-password: YOUR_APP_PASSWORD_WITHOUT_SPACES" \
   -d '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"wp_get_tags","arguments":{"per_page":5}}}'
 ```
 
@@ -59,9 +59,9 @@ curl -s -X POST http://localhost:8789/mcp \
 ```bash
 curl -s -X POST http://localhost:8789/mcp \
   -H "Content-Type: application/json" \
-  -H "x-wordpress-url: https://wp.missmanga.org" \
-  -H "x-wordpress-username: kaewz" \
-  -H "x-wordpress-password: cUAnCKZ1u5DNIkpSbMraFCWL" \
+  -H "x-wordpress-url: https://your-wordpress-site.com" \
+  -H "x-wordpress-username: YOUR_USERNAME" \
+  -H "x-wordpress-password: YOUR_APP_PASSWORD_WITHOUT_SPACES" \
   -d '{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"wp_create_tag","arguments":{"name":"test-tag-auto","description":"Created by automated test"}}}'
 ```
 
@@ -69,9 +69,9 @@ curl -s -X POST http://localhost:8789/mcp \
 ```bash
 curl -s -X POST http://localhost:8789/mcp \
   -H "Content-Type: application/json" \
-  -H "x-wordpress-url: https://wp.missmanga.org" \
-  -H "x-wordpress-username: kaewz" \
-  -H "x-wordpress-password: cUAnCKZ1u5DNIkpSbMraFCWL" \
+  -H "x-wordpress-url: https://your-wordpress-site.com" \
+  -H "x-wordpress-username: YOUR_USERNAME" \
+  -H "x-wordpress-password: YOUR_APP_PASSWORD_WITHOUT_SPACES" \
   -d '{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"wp_get_comments","arguments":{"per_page":5}}}'
 ```
 
@@ -79,9 +79,9 @@ curl -s -X POST http://localhost:8789/mcp \
 ```bash
 curl -s -X POST http://localhost:8789/mcp \
   -H "Content-Type: application/json" \
-  -H "x-wordpress-url: https://wp.missmanga.org" \
-  -H "x-wordpress-username: kaewz" \
-  -H "x-wordpress-password: cUAnCKZ1u5DNIkpSbMraFCWL" \
+  -H "x-wordpress-url: https://your-wordpress-site.com" \
+  -H "x-wordpress-username: YOUR_USERNAME" \
+  -H "x-wordpress-password: YOUR_APP_PASSWORD_WITHOUT_SPACES" \
   -d '{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"wp_get_category","arguments":{"id":1}}}'
 ```
 
@@ -101,9 +101,9 @@ curl -s -X POST http://localhost:8789/mcp \
 ```powershell
 $headers = @{
     "Content-Type" = "application/json"
-    "x-wordpress-url" = "https://wp.missmanga.org"
-    "x-wordpress-username" = "kaewz"
-    "x-wordpress-password" = "cUAnCKZ1u5DNIkpSbMraFCWL"
+    "x-wordpress-url" = "https://your-wordpress-site.com"
+    "x-wordpress-username" = "YOUR_USERNAME"
+    "x-wordpress-password" = "YOUR_APP_PASSWORD_WITHOUT_SPACES"
 }
 
 Invoke-RestMethod -Uri "http://localhost:8789/mcp" -Method Post -Headers $headers -Body '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"wp_get_categories","arguments":{"per_page":5}}}'

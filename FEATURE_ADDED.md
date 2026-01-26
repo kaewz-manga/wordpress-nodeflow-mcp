@@ -177,8 +177,8 @@ curl -X POST http://localhost:8787/mcp \
 ```json
 {
   "id": 158,
-  "source_url": "https://wp.missmanga.org/wp-content/uploads/2026/01/test-pixel.png",
-  "link": "https://wp.missmanga.org/test-1x1-pixel-from-mcp-base64/",
+  "source_url": "https://your-wordpress-site.com/wp-content/uploads/2026/01/test-pixel.png",
+  "link": "https://your-wordpress-site.com/test-1x1-pixel-from-mcp-base64/",
   "media_type": "image",
   "mime_type": "image/png"
 }

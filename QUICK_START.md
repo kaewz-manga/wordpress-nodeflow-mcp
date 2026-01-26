@@ -30,8 +30,8 @@ WORDPRESS_APP_PASSWORD=yourAppPasswordWithoutSpaces
 ```
 
 **CRITICAL**: Remove all spaces from Application Password
-- WordPress shows: `cUAn CKZ1 u5DN IkpS bMra FCWL`
-- You use: `cUAnCKZ1u5DNIkpSbMraFCWL`
+- WordPress shows: `aBcD eFgH iJkL mNoP qRsT uVwX`
+- You use: `aBcDeFgHiJkLmNoPqRsTuVwX`
 
 ---
 

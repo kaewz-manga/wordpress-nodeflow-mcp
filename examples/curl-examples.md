@@ -311,8 +311,8 @@ Invoke-RestMethod -Uri "http://localhost:8787/mcp" `
 ## Notes
 
 **IMPORTANT**: Application Password Format
-- WordPress displays: `cUAn CKZ1 u5DN IkpS bMra FCWL` (with spaces)
-- You must use: `cUAnCKZ1u5DNIkpSbMraFCWL` (without spaces)
+- WordPress displays: `aBcD eFgH iJkL mNoP qRsT uVwX` (with spaces)
+- You must use: `aBcDeFgHiJkLmNoPqRsTuVwX` (without spaces)
 
 **Local Development**: Use `http://localhost:8787`
 

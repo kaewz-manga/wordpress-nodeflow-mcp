@@ -3,7 +3,7 @@
 **Test Date**: 2026-01-26
 **Environment**: Local Development (Wrangler 3.114.17)
 **Server**: http://127.0.0.1:8787
-**WordPress Site**: https://wp.missmanga.org
+**WordPress Site**: https://your-wordpress-site.com
 
 ---
 
@@ -180,8 +180,8 @@
 ## Configuration Test
 
 ✅ **Environment Variables**: Loaded successfully
-- WORDPRESS_URL: https://wp.missmanga.org
-- WORDPRESS_USERNAME: kaewz
+- WORDPRESS_URL: https://your-wordpress-site.com
+- WORDPRESS_USERNAME: YOUR_USERNAME
 - WORDPRESS_APP_PASSWORD: (hidden, loaded correctly)
 - ALLOWED_ORIGINS: *
 
@@ -225,7 +225,7 @@
 - **Port**: 8787 (localhost)
 
 ### WordPress Configuration
-- **Site**: https://wp.missmanga.org
+- **Site**: https://your-wordpress-site.com
 - **Authentication**: HTTP Basic Auth (Application Password)
 - **REST API**: Enabled
 - **Plugins**: WooCommerce, Security plugins active

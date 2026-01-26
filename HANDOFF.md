@@ -212,9 +212,9 @@ curl -X POST http://localhost:8787/mcp \
 ```bash
 # Multi-tenant mode (headers)
 curl -X POST http://localhost:8787/mcp \
-  -H "x-wordpress-url: https://wp.missmanga.org" \
-  -H "x-wordpress-username: kaewz" \
-  -H "x-wordpress-password: cUAnCKZ1u5DNIkpSbMraFCWL" \
+  -H "x-wordpress-url: https://your-wordpress-site.com" \
+  -H "x-wordpress-username: YOUR_USERNAME" \
+  -H "x-wordpress-password: YOUR_APP_PASSWORD_WITHOUT_SPACES" \
   -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"wp_create_post","arguments":{"title":"Test","content":"Content","status":"draft"}}}'
 # ✅ Creates post, returns ID and link
 ```
@@ -232,9 +232,9 @@ curl -X POST http://localhost:8787/mcp \
 ```bash
 # Upload base64 from n8n workflow
 curl -X POST http://localhost:8787/mcp \
-  -H "x-wordpress-url: https://wp.missmanga.org" \
-  -H "x-wordpress-username: kaewz" \
-  -H "x-wordpress-password: cUAnCKZ1u5DNIkpSbMraFCWL" \
+  -H "x-wordpress-url: https://your-wordpress-site.com" \
+  -H "x-wordpress-username: YOUR_USERNAME" \
+  -H "x-wordpress-password: YOUR_APP_PASSWORD_WITHOUT_SPACES" \
   -d '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"wp_upload_media_from_base64","arguments":{"base64":"iVBORw0KG...","fileName":"test.png","mimeType":"image/png"}}}'
 # ✅ Uploaded successfully (ID: 158)
 ```
@@ -400,9 +400,9 @@ curl -X POST http://localhost:8787/mcp \
 ```bash
 # Get posts
 curl -X POST http://localhost:8787/mcp \
-  -H "x-wordpress-url: https://wp.missmanga.org" \
-  -H "x-wordpress-username: kaewz" \
-  -H "x-wordpress-password: cUAnCKZ1u5DNIkpSbMraFCWL" \
+  -H "x-wordpress-url: https://your-wordpress-site.com" \
+  -H "x-wordpress-username: YOUR_USERNAME" \
+  -H "x-wordpress-password: YOUR_APP_PASSWORD_WITHOUT_SPACES" \
   -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"wp_get_posts","arguments":{"per_page":5}}}'
 ```
 
@@ -428,8 +428,8 @@ curl https://wordpress-mcp.nodeflow.workers.dev/health
 **CRITICAL**: WordPress displays passwords **with spaces** for readability, but HTTP Basic Auth **does not support spaces**.
 
 **Example**:
-- WordPress UI shows: `cUAn CKZ1 u5DN IkpS bMra FCWL`
-- Must use in API: `cUAnCKZ1u5DNIkpSbMraFCWL` (no spaces)
+- WordPress UI shows: `aBcD eFgH iJkL mNoP qRsT uVwX`
+- Must use in API: `aBcDeFgHiJkLmNoPqRsTuVwX` (no spaces)
 
 **Implementation**: `src/wordpress/auth.ts` automatically removes spaces
 
@@ -460,9 +460,9 @@ Access-Control-Allow-Headers: Content-Type, x-wordpress-url, x-wordpress-usernam
 ### 5. Environment Variables
 **Required for single-tenant mode** (`.dev.vars`):
 ```env
-WORDPRESS_URL=https://wp.missmanga.org
-WORDPRESS_USERNAME=kaewz
-WORDPRESS_APP_PASSWORD=cUAnCKZ1u5DNIkpSbMraFCWL
+WORDPRESS_URL=https://your-wordpress-site.com
+WORDPRESS_USERNAME=YOUR_USERNAME
+WORDPRESS_APP_PASSWORD=YOUR_APP_PASSWORD_WITHOUT_SPACES
 IMGBB_API_KEY=your_imgbb_api_key_here
 ALLOWED_ORIGINS=*
 ```
@@ -597,9 +597,9 @@ curl https://wordpress-mcp.nodeflow.workers.dev/health
 
 ## 📞 Contact & Support
 
-**Project Owner**: User (kaewz)
-**WordPress Site**: https://wp.missmanga.org
-**n8n Instance**: https://n8n-no1.missmanga.org
+**Project Owner**: User
+**WordPress Site**: https://your-wordpress-site.com
+**n8n Instance**: https://your-n8n-instance.com
 **Cloudflare Account**: nodeflow.workers.dev
 
 ---

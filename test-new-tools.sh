@@ -4,13 +4,13 @@
 echo ""
 echo "=== Testing wordpress-nodeflow-mcp New Tools ==="
 echo "Server: http://localhost:8789"
-echo "WordPress: https://wp.missmanga.org"
+echo "WordPress: https://your-wordpress-site.com"
 echo ""
 
 BASE_URL="http://localhost:8789/mcp"
-WP_URL="https://wp.missmanga.org"
-WP_USER="kaewz"
-WP_PASS="cUAnCKZ1u5DNIkpSbMraFCWL"
+WP_URL="https://your-wordpress-site.com"
+WP_USER="YOUR_USERNAME"
+WP_PASS="YOUR_APP_PASSWORD_WITHOUT_SPACES"
 
 TESTS_PASSED=0
 TESTS_FAILED=0

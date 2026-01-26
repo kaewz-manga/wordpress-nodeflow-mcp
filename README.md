@@ -85,8 +85,8 @@ WORDPRESS_APP_PASSWORD=yourAppPasswordWithoutSpaces
 ```
 
 **CRITICAL**: WordPress Application Password format:
-- WordPress UI shows: `cUAn CKZ1 u5DN IkpS bMra FCWL` (with spaces)
-- You must use: `cUAnCKZ1u5DNIkpSbMraFCWL` (without spaces)
+- WordPress UI shows: `aBcD eFgH iJkL mNoP qRsT uVwX` (with spaces)
+- You must use: `aBcDeFgHiJkLmNoPqRsTuVwX` (without spaces)
 
 ### 4. Run Locally
 
@@ -186,9 +186,9 @@ Pass credentials via headers (overrides environment):
 ```bash
 curl -X POST https://wordpress-mcp.nodeflow.workers.dev/mcp \
   -H "Content-Type: application/json" \
-  -H "x-wordpress-url: https://wp.missmanga.org" \
-  -H "x-wordpress-username: kaewz" \
-  -H "x-wordpress-password: cUAnCKZ1u5DNIkpSbMraFCWL" \
+  -H "x-wordpress-url: https://your-wordpress-site.com" \
+  -H "x-wordpress-username: YOUR_USERNAME" \
+  -H "x-wordpress-password: YOUR_APP_PASSWORD_WITHOUT_SPACES" \
   -d '{
     "jsonrpc": "2.0",
     "id": 1,
@@ -335,8 +335,8 @@ npm run test:watch
 **Problem**: All write operations (POST/PUT/DELETE) fail with 401
 
 **Solution**: Remove spaces from Application Password
-- ❌ Wrong: `cUAn CKZ1 u5DN IkpS bMra FCWL`
-- ✅ Correct: `cUAnCKZ1u5DNIkpSbMraFCWL`
+- ❌ Wrong: `aBcD eFgH iJkL mNoP qRsT uVwX`
+- ✅ Correct: `aBcDeFgHiJkLmNoPqRsTuVwX`
 
 ### CORS Errors
 

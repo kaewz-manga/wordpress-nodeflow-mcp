@@ -93,7 +93,7 @@ function cleanApplicationPassword(password: string): string {
 
 **Example**:
 - WordPress UI shows: `cUAn CKZ1 u5DN IkpS bMra FCWL`
-- Must use: `cUAnCKZ1u5DNIkpSbMraFCWL`
+- Must use: `aBcDeFgHiJkLmNoPqRsTuVwX`
 
 ### 2. Multi-Tenant Credential Priority
 
@@ -185,7 +185,7 @@ const status = validateEnum(args.status, 'status', POST_STATUSES, 'draft');
 Set via `wrangler secret put <KEY>`:
 
 ```bash
-WORDPRESS_URL                # WordPress site URL (e.g., https://wp.missmanga.org)
+WORDPRESS_URL                # WordPress site URL (e.g., https://your-wordpress-site.com)
 WORDPRESS_USERNAME           # WordPress admin username
 WORDPRESS_APP_PASSWORD       # Application Password (spaces removed!)
 ALLOWED_ORIGINS              # CORS allowed origins (default: *)
@@ -198,7 +198,7 @@ Send with each request to override environment:
 ```
 x-wordpress-url: https://wp.example.com
 x-wordpress-username: admin
-x-wordpress-password: cUAnCKZ1u5DNIkpSbMraFCWL
+x-wordpress-password: YOUR_APP_PASSWORD_WITHOUT_SPACES
 ```
 
 ### wrangler.toml
@@ -245,9 +245,9 @@ curl https://wordpress-mcp.nodeflow.workers.dev/health
 # Test create post (multi-tenant)
 curl -X POST https://wordpress-mcp.nodeflow.workers.dev/mcp \
   -H "Content-Type: application/json" \
-  -H "x-wordpress-url: https://wp.missmanga.org" \
-  -H "x-wordpress-username: kaewz" \
-  -H "x-wordpress-password: cUAnCKZ1u5DNIkpSbMraFCWL" \
+  -H "x-wordpress-url: https://your-wordpress-site.com" \
+  -H "x-wordpress-username: YOUR_USERNAME" \
+  -H "x-wordpress-password: YOUR_APP_PASSWORD_WITHOUT_SPACES" \
   -d '{
     "jsonrpc": "2.0",
     "id": 1,
@@ -276,10 +276,10 @@ curl -X POST https://wordpress-mcp.nodeflow.workers.dev/mcp \
 **Fix**: Remove all spaces from password
 ```typescript
 // ❌ Wrong
-WORDPRESS_APP_PASSWORD=cUAn CKZ1 u5DN IkpS bMra FCWL
+WORDPRESS_APP_PASSWORD=aBcD eFgH iJkL mNoP qRsT uVwX
 
 // ✅ Correct
-WORDPRESS_APP_PASSWORD=cUAnCKZ1u5DNIkpSbMraFCWL
+WORDPRESS_APP_PASSWORD=aBcDeFgHiJkLmNoPqRsTuVwX
 ```
 
 ### 2. CORS Errors
