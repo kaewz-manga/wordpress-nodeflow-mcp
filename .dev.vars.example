@@ -1,0 +1,23 @@
+# Local Development Secrets
+# Copy this file to .dev.vars and fill in your values
+# NEVER commit .dev.vars to git (it's in .gitignore)
+
+# WordPress Site Configuration (Single-tenant mode)
+# These are fallback values if x-wordpress-* headers are not provided
+WORDPRESS_URL=https://wp.missmanga.org
+WORDPRESS_USERNAME=kaewz
+WORDPRESS_APP_PASSWORD=cUAnCKZ1u5DNIkpSbMraFCWL
+
+# IMPORTANT: Application Password Format
+# - WordPress displays passwords WITH SPACES for readability
+# - You MUST remove all spaces before using in API
+# - Example (WordPress UI shows): cUAn CKZ1 u5DN IkpS bMra FCWL
+# - Example (what you use here): cUAnCKZ1u5DNIkpSbMraFCWL
+
+# ImgBB API Key (Single-tenant mode)
+# Get from: https://api.imgbb.com/
+# Optional - can use x-imgbb-api-key header instead
+IMGBB_API_KEY=your_imgbb_api_key_here
+
+# CORS Configuration
+ALLOWED_ORIGINS=*

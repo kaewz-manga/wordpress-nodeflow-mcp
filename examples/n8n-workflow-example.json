@@ -1,0 +1,115 @@
+{
+  "name": "WordPress MCP - Create Post Example",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wordpress-mcp.nodeflow.workers.dev/mcp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-wordpress-url",
+              "value": "https://wp.missmanga.org"
+            },
+            {
+              "name": "x-wordpress-username",
+              "value": "kaewz"
+            },
+            {
+              "name": "x-wordpress-password",
+              "value": "cUAnCKZ1u5DNIkpSbMraFCWL"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"wp_create_post\",\n    \"arguments\": {\n      \"title\": \"{{ $json.title || 'Test Post from n8n' }}\",\n      \"content\": \"{{ $json.content || 'This post was created via WordPress MCP from n8n workflow.' }}\",\n      \"status\": \"draft\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "http-request",
+      "name": "WordPress MCP - Create Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "result",
+              "name": "post_id",
+              "value": "={{ JSON.parse($json.result.content[0].text).id }}",
+              "type": "number"
+            },
+            {
+              "id": "title",
+              "name": "post_title",
+              "value": "={{ JSON.parse($json.result.content[0].text).title }}",
+              "type": "string"
+            },
+            {
+              "id": "link",
+              "name": "post_link",
+              "value": "={{ JSON.parse($json.result.content[0].text).link }}",
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "name": "post_status",
+              "value": "={{ JSON.parse($json.result.content[0].text).status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "edit-fields",
+      "name": "Extract Post Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "WordPress MCP - Create Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WordPress MCP - Create Post": {
+      "main": [
+        [
+          {
+            "node": "Extract Post Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {}
+}

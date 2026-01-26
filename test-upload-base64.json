@@ -1,0 +1,15 @@
+{
+  "jsonrpc": "2.0",
+  "id": 20,
+  "method": "tools/call",
+  "params": {
+    "name": "wp_upload_media_from_base64",
+    "arguments": {
+      "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      "fileName": "test-pixel.png",
+      "mimeType": "image/png",
+      "title": "Test 1x1 Pixel from MCP Base64",
+      "alt_text": "A tiny 1x1 red pixel uploaded via base64"
+    }
+  }
+}

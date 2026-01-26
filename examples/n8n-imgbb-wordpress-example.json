@@ -1,0 +1,224 @@
+{
+  "name": "Upload to ImgBB then WordPress via MCP",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://picsum.photos/800/600",
+        "options": {}
+      },
+      "id": "download-image",
+      "name": "Download Random Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "mode": "jsonToBinary",
+        "options": {
+          "encoding": "base64"
+        }
+      },
+      "id": "convert-to-binary",
+      "name": "Convert to Binary",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wordpress-mcp.nodeflow.workers.dev/mcp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"upload_to_imgbb\",\n    \"arguments\": {\n      \"base64\": \"{{ $binary.data.toString('base64') }}\",\n      \"apiKey\": \"YOUR_IMGBB_API_KEY\",\n      \"name\": \"image-{{ $now.toFormat('yyyyMMdd-HHmmss') }}\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "upload-to-imgbb",
+      "name": "MCP - Upload to ImgBB",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "imgbb_url",
+              "name": "imgbb_url",
+              "value": "={{ JSON.parse($json.result.content[0].text).originalContentUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "imgbb_thumb",
+              "name": "imgbb_thumb",
+              "value": "={{ JSON.parse($json.result.content[0].text).previewImageUrl }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-imgbb-urls",
+      "name": "Extract ImgBB URLs",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wordpress-mcp.nodeflow.workers.dev/mcp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-wordpress-url",
+              "value": "https://wp.missmanga.org"
+            },
+            {
+              "name": "x-wordpress-username",
+              "value": "kaewz"
+            },
+            {
+              "name": "x-wordpress-password",
+              "value": "cUAnCKZ1u5DNIkpSbMraFCWL"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"wp_upload_media_from_url\",\n    \"arguments\": {\n      \"url\": \"{{ $json.imgbb_url }}\",\n      \"title\": \"Image from ImgBB\",\n      \"alt_text\": \"Uploaded via ImgBB and MCP\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "upload-to-wordpress",
+      "name": "MCP - Upload to WordPress",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wordpress_url",
+              "name": "wordpress_url",
+              "value": "={{ JSON.parse($json.result.content[0].text).source_url }}",
+              "type": "string"
+            },
+            {
+              "id": "wordpress_link",
+              "name": "wordpress_link",
+              "value": "={{ JSON.parse($json.result.content[0].text).link }}",
+              "type": "string"
+            },
+            {
+              "id": "wordpress_id",
+              "name": "wordpress_id",
+              "value": "={{ JSON.parse($json.result.content[0].text).id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "final-result",
+      "name": "Final Result",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1450, 300]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Download Random Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Random Image": {
+      "main": [
+        [
+          {
+            "node": "Convert to Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Binary": {
+      "main": [
+        [
+          {
+            "node": "MCP - Upload to ImgBB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP - Upload to ImgBB": {
+      "main": [
+        [
+          {
+            "node": "Extract ImgBB URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract ImgBB URLs": {
+      "main": [
+        [
+          {
+            "node": "MCP - Upload to WordPress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP - Upload to WordPress": {
+      "main": [
+        [
+          {
+            "node": "Final Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {}
+}

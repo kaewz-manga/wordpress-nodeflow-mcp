@@ -1,0 +1,153 @@
+{
+  "name": "WordPress MCP - Upload Binary Image from n8n",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://picsum.photos/800/600",
+        "options": {}
+      },
+      "id": "download-image",
+      "name": "Download Random Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "mode": "jsonToBinary",
+        "options": {
+          "encoding": "base64",
+          "mimeType": "={{ $json.headers['content-type'] }}"
+        }
+      },
+      "id": "convert-to-binary",
+      "name": "Convert to Binary",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wordpress-mcp.nodeflow.workers.dev/mcp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-wordpress-url",
+              "value": "https://wp.missmanga.org"
+            },
+            {
+              "name": "x-wordpress-username",
+              "value": "kaewz"
+            },
+            {
+              "name": "x-wordpress-password",
+              "value": "cUAnCKZ1u5DNIkpSbMraFCWL"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"wp_upload_media_from_base64\",\n    \"arguments\": {\n      \"base64\": \"{{ $binary.data.toString('base64') }}\",\n      \"fileName\": \"random-image.jpg\",\n      \"mimeType\": \"{{ $binary.mimeType }}\",\n      \"title\": \"Random Image from n8n\",\n      \"alt_text\": \"A random image uploaded via n8n workflow\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "id": "upload-to-wordpress",
+      "name": "WordPress MCP - Upload Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "media_id",
+              "name": "media_id",
+              "value": "={{ JSON.parse($json.result.content[0].text).id }}",
+              "type": "number"
+            },
+            {
+              "id": "media_url",
+              "name": "media_url",
+              "value": "={{ JSON.parse($json.result.content[0].text).source_url }}",
+              "type": "string"
+            },
+            {
+              "id": "media_link",
+              "name": "media_link",
+              "value": "={{ JSON.parse($json.result.content[0].text).link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-urls",
+      "name": "Extract Media URLs",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Download Random Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Random Image": {
+      "main": [
+        [
+          {
+            "node": "Convert to Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Binary": {
+      "main": [
+        [
+          {
+            "node": "WordPress MCP - Upload Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WordPress MCP - Upload Image": {
+      "main": [
+        [
+          {
+            "node": "Extract Media URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {}
+}

@@ -1,0 +1,22 @@
+name = "wordpress-nodeflow-mcp"
+main = "src/index.ts"
+compatibility_date = "2024-11-27"
+compatibility_flags = ["nodejs_compat"]
+
+# Production environment
+[env.production]
+name = "wordpress-nodeflow-mcp"
+route = { pattern = "wordpress-mcp.nodeflow.workers.dev", zone_name = "nodeflow.workers.dev" }
+
+# Development environment
+[env.development]
+name = "wordpress-nodeflow-mcp-dev"
+
+# Secrets (set via `wrangler secret put <KEY>`)
+# WORDPRESS_URL - Default WordPress site URL (e.g., https://wp.missmanga.org)
+# WORDPRESS_USERNAME - WordPress admin username
+# WORDPRESS_APP_PASSWORD - WordPress Application Password (spaces removed)
+
+# CORS settings
+[vars]
+ALLOWED_ORIGINS = "*"

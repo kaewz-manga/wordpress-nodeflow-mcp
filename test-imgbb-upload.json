@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 30,
+  "method": "tools/call",
+  "params": {
+    "name": "upload_to_imgbb",
+    "arguments": {
+      "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      "apiKey": "YOUR_IMGBB_API_KEY_HERE",
+      "name": "test-pixel"
+    }
+  }
+}

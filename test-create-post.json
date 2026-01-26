@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "wp_create_post",
+    "arguments": {
+      "title": "Test Post from wordpress-nodeflow-mcp",
+      "content": "<p>This post was created via Cloudflare Workers MCP server!</p><p>Testing successful integration.</p>",
+      "status": "draft"
+    }
+  }
+}
