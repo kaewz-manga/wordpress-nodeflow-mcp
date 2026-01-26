@@ -1,0 +1,40 @@
+{
+  "mcpServers": {
+    "wordpress-nodeflow-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic-ai/supergateway",
+        "--stdio",
+        "http://localhost:8789/mcp",
+        "--headers",
+        "x-wordpress-url=https://wp.missmanga.org",
+        "--headers",
+        "x-wordpress-username=kaewz",
+        "--headers",
+        "x-wordpress-password=YOUR_APP_PASSWORD_HERE"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "wordpress-nodeflow-mcp-production": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic-ai/supergateway",
+        "--stdio",
+        "https://wordpress-mcp.nodeflow.workers.dev/mcp",
+        "--headers",
+        "x-wordpress-url=https://wp.missmanga.org",
+        "--headers",
+        "x-wordpress-username=kaewz",
+        "--headers",
+        "x-wordpress-password=YOUR_APP_PASSWORD_HERE"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}

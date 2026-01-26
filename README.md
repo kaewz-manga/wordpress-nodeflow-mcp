@@ -4,12 +4,14 @@ Cloudflare Workers MCP server for WordPress REST API - serverless, auto-scaling,
 
 ## Features
 
-- **14 Tools**: Posts, Pages, Media operations, and Image Storage
+- **24 Tools**: Posts, Pages, Media, Categories, Tags, Comments, and Image Storage
 - **Serverless**: Runs on Cloudflare Workers (300+ edge locations)
 - **Auto-scaling**: Handles 100,000 requests/day (free tier)
 - **Zero Memory Leaks**: Stateless architecture, no long-running processes
 - **Multi-tenant**: Support multiple WordPress sites via headers
 - **MCP Protocol**: JSON-RPC 2.0 over HTTP
+- **n8n Integration**: Direct HTTP API calls
+- **Claude Desktop**: Via supergateway (stdio transport)
 
 ## Available Tools
 
@@ -31,6 +33,22 @@ Cloudflare Workers MCP server for WordPress REST API - serverless, auto-scaling,
 - `wp_get_media_item` - Get single media item
 - `wp_upload_media_from_url` - Upload media from URL
 - `wp_upload_media_from_base64` - Upload media from base64 (n8n binary data)
+
+### Categories (4 tools)
+- `wp_get_categories` - List categories
+- `wp_get_category` - Get single category by ID
+- `wp_create_category` - Create new category
+- `wp_delete_category` - Delete category
+
+### Tags (2 tools)
+- `wp_get_tags` - List tags
+- `wp_create_tag` - Create new tag
+
+### Comments (4 tools)
+- `wp_get_comments` - List comments with filtering
+- `wp_approve_comment` - Approve pending comment
+- `wp_spam_comment` - Mark comment as spam
+- `wp_delete_comment` - Delete comment
 
 ### Storage (1 tool)
 - `upload_to_imgbb` - Upload image to ImgBB, get public URLs (requires API key)
@@ -93,6 +111,53 @@ Deploy:
 ```bash
 npm run deploy
 ```
+
+## 🖥️ Claude Desktop Integration
+
+**See full guide**: [CLAUDE_DESKTOP.md](CLAUDE_DESKTOP.md)
+
+**Quick Setup**:
+
+1. **Start local server** (or use production URL)
+```bash
+npm run dev  # Runs on http://localhost:8789
+```
+
+2. **Configure Claude Desktop**
+
+Edit config file:
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Linux: `~/.config/Claude/claude_desktop_config.json`
+
+Add this:
+```json
+{
+  "mcpServers": {
+    "wordpress": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic-ai/supergateway",
+        "--stdio",
+        "http://localhost:8789/mcp",
+        "--headers",
+        "x-wordpress-url=https://wp.example.com",
+        "--headers",
+        "x-wordpress-username=YOUR_USERNAME",
+        "--headers",
+        "x-wordpress-password=YOUR_APP_PASSWORD"
+      ]
+    }
+  }
+}
+```
+
+3. **Restart Claude Desktop**
+
+4. **Test**: Ask Claude to "List all WordPress tools"
+
+**For production**: Replace `http://localhost:8789/mcp` with `https://wordpress-mcp.nodeflow.workers.dev/mcp`
 
 ## Usage
 
