@@ -68,7 +68,8 @@ export function validateWordPressUrl(url: string): string {
     if (!['http:', 'https:'].includes(parsed.protocol)) {
       throw new Error('Invalid protocol');
     }
-    return url;
+    // Remove trailing slash to prevent double slashes in API URLs
+    return url.replace(/\/+$/, '');
   } catch (error) {
     throw new MCPError(
       MCPErrorCodes.INVALID_CREDENTIALS,

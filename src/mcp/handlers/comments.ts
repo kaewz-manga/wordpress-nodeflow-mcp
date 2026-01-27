@@ -5,14 +5,29 @@
 import { WordPressClient } from '../../wordpress/client';
 import {
   validateNumber,
+  validateRequiredNumber,
   validateOptionalString,
-  validateEnum,
   validateBoolean,
 } from '../../utils/validation';
 
-const COMMENT_STATUSES = ['approved', 'pending', 'spam', 'trash'];
+// Type definitions for handler arguments
+interface GetCommentsArgs {
+  per_page?: number;
+  page?: number;
+  post?: number;
+  status?: string;
+}
 
-export async function handleGetComments(args: any, client: WordPressClient) {
+interface CommentIdArgs {
+  id: number;
+}
+
+interface DeleteCommentArgs {
+  id: number;
+  force?: boolean;
+}
+
+export async function handleGetComments(args: GetCommentsArgs, client: WordPressClient) {
   const perPage = validateNumber(args.per_page, 'per_page', false) || 10;
   const page = validateNumber(args.page, 'page', false) || 1;
   const post = validateNumber(args.post, 'post', false);
@@ -40,9 +55,8 @@ export async function handleGetComments(args: any, client: WordPressClient) {
   };
 }
 
-export async function handleApproveComment(args: any, client: WordPressClient) {
-  const id = validateNumber(args.id, 'id', true);
-
+export async function handleApproveComment(args: CommentIdArgs, client: WordPressClient) {
+  const id = validateRequiredNumber(args.id, 'id');
   const comment = await client.updateCommentStatus(id, 'approved');
 
   return {
@@ -54,9 +68,8 @@ export async function handleApproveComment(args: any, client: WordPressClient) {
   };
 }
 
-export async function handleSpamComment(args: any, client: WordPressClient) {
-  const id = validateNumber(args.id, 'id', true);
-
+export async function handleSpamComment(args: CommentIdArgs, client: WordPressClient) {
+  const id = validateRequiredNumber(args.id, 'id');
   const comment = await client.updateCommentStatus(id, 'spam');
 
   return {
@@ -68,8 +81,8 @@ export async function handleSpamComment(args: any, client: WordPressClient) {
   };
 }
 
-export async function handleDeleteComment(args: any, client: WordPressClient) {
-  const id = validateNumber(args.id, 'id', true);
+export async function handleDeleteComment(args: DeleteCommentArgs, client: WordPressClient) {
+  const id = validateRequiredNumber(args.id, 'id');
   const force = validateBoolean(args.force, 'force', false);
 
   const result = await client.deleteComment(id, force);

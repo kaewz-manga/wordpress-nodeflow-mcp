@@ -246,7 +246,7 @@ export const pagesTools: MCPTool[] = [
 ];
 
 /**
- * Media Tools (3)
+ * Media Tools (4)
  */
 export const mediaTools: MCPTool[] = [
   {

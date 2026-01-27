@@ -3,6 +3,7 @@
  */
 
 import { MCPError, MCPErrorCodes } from '../utils/errors';
+import { REQUEST_TIMEOUT_MS, validateExternalUrl } from '../utils/validation';
 import { createAuthHeader, validateWordPressUrl } from './auth';
 import {
   WordPressCredentials,
@@ -31,6 +32,71 @@ export class WordPressClient {
   }
 
   /**
+   * Build query string from params object
+   */
+  private buildQueryString(params: Record<string, string | number | boolean | undefined>): string {
+    const queryParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) {
+        queryParams.set(key, String(value));
+      }
+    }
+    const query = queryParams.toString();
+    return query ? `?${query}` : '';
+  }
+
+  /**
+   * Fetch with timeout support
+   */
+  private async fetchWithTimeout(
+    url: string,
+    options: RequestInit = {},
+    timeoutMs: number = REQUEST_TIMEOUT_MS
+  ): Promise<Response> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      return response;
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new MCPError(
+          MCPErrorCodes.WORDPRESS_API_ERROR,
+          `Request timeout after ${timeoutMs}ms`
+        );
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  /**
+   * Handle error response from WordPress API
+   */
+  private async handleErrorResponse(response: Response, context: string): Promise<never> {
+    let errorData: WPErrorResponse;
+    try {
+      errorData = await response.json();
+    } catch {
+      throw new MCPError(
+        MCPErrorCodes.WORDPRESS_API_ERROR,
+        `${context}: ${response.status} ${response.statusText}`
+      );
+    }
+
+    throw new MCPError(
+      MCPErrorCodes.WORDPRESS_API_ERROR,
+      `${context}: ${errorData.message}`,
+      errorData
+    );
+  }
+
+  /**
    * Make a WordPress REST API request
    */
   private async makeRequest<T>(
@@ -39,7 +105,7 @@ export class WordPressClient {
   ): Promise<T> {
     const url = `${this.baseUrl}/wp-json/wp/v2${endpoint}`;
 
-    const response = await fetch(url, {
+    const response = await this.fetchWithTimeout(url, {
       ...options,
       headers: {
         Authorization: this.authHeader,
@@ -49,21 +115,7 @@ export class WordPressClient {
     });
 
     if (!response.ok) {
-      let errorData: WPErrorResponse;
-      try {
-        errorData = await response.json();
-      } catch {
-        throw new MCPError(
-          MCPErrorCodes.WORDPRESS_API_ERROR,
-          `WordPress API error: ${response.status} ${response.statusText}`
-        );
-      }
-
-      throw new MCPError(
-        MCPErrorCodes.WORDPRESS_API_ERROR,
-        `WordPress API error: ${errorData.message}`,
-        errorData
-      );
+      await this.handleErrorResponse(response, 'WordPress API error');
     }
 
     return response.json();
@@ -78,14 +130,8 @@ export class WordPressClient {
     status?: string;
     search?: string;
   } = {}): Promise<WPPost[]> {
-    const queryParams = new URLSearchParams();
-    if (params.per_page) queryParams.set('per_page', String(params.per_page));
-    if (params.page) queryParams.set('page', String(params.page));
-    if (params.status) queryParams.set('status', params.status);
-    if (params.search) queryParams.set('search', params.search);
-
-    const query = queryParams.toString();
-    return this.makeRequest<WPPost[]>(`/posts${query ? `?${query}` : ''}`);
+    const query = this.buildQueryString(params);
+    return this.makeRequest<WPPost[]>(`/posts${query}`);
   }
 
   async getPost(id: number): Promise<WPPost> {
@@ -106,12 +152,9 @@ export class WordPressClient {
     });
   }
 
-  async deletePost(id: number, force: boolean = false): Promise<any> {
-    const queryParams = new URLSearchParams();
-    if (force) queryParams.set('force', 'true');
-
-    const query = queryParams.toString();
-    return this.makeRequest(`/posts/${id}${query ? `?${query}` : ''}`, {
+  async deletePost(id: number, force: boolean = false): Promise<{ deleted: boolean; previous: WPPost }> {
+    const query = this.buildQueryString({ force: force || undefined });
+    return this.makeRequest(`/posts/${id}${query}`, {
       method: 'DELETE',
     });
   }
@@ -124,13 +167,8 @@ export class WordPressClient {
     page?: number;
     search?: string;
   } = {}): Promise<WPPage[]> {
-    const queryParams = new URLSearchParams();
-    if (params.per_page) queryParams.set('per_page', String(params.per_page));
-    if (params.page) queryParams.set('page', String(params.page));
-    if (params.search) queryParams.set('search', params.search);
-
-    const query = queryParams.toString();
-    return this.makeRequest<WPPage[]>(`/pages${query ? `?${query}` : ''}`);
+    const query = this.buildQueryString(params);
+    return this.makeRequest<WPPage[]>(`/pages${query}`);
   }
 
   async createPage(data: CreatePageData): Promise<WPPage> {
@@ -147,12 +185,9 @@ export class WordPressClient {
     });
   }
 
-  async deletePage(id: number, force: boolean = false): Promise<any> {
-    const queryParams = new URLSearchParams();
-    if (force) queryParams.set('force', 'true');
-
-    const query = queryParams.toString();
-    return this.makeRequest(`/pages/${id}${query ? `?${query}` : ''}`, {
+  async deletePage(id: number, force: boolean = false): Promise<{ deleted: boolean; previous: WPPage }> {
+    const query = this.buildQueryString({ force: force || undefined });
+    return this.makeRequest(`/pages/${id}${query}`, {
       method: 'DELETE',
     });
   }
@@ -165,13 +200,8 @@ export class WordPressClient {
     page?: number;
     media_type?: string;
   } = {}): Promise<WPMedia[]> {
-    const queryParams = new URLSearchParams();
-    if (params.per_page) queryParams.set('per_page', String(params.per_page));
-    if (params.page) queryParams.set('page', String(params.page));
-    if (params.media_type) queryParams.set('media_type', params.media_type);
-
-    const query = queryParams.toString();
-    return this.makeRequest<WPMedia[]>(`/media${query ? `?${query}` : ''}`);
+    const query = this.buildQueryString(params);
+    return this.makeRequest<WPMedia[]>(`/media${query}`);
   }
 
   async getMediaItem(id: number): Promise<WPMedia> {
@@ -184,8 +214,11 @@ export class WordPressClient {
     alt_text?: string;
     caption?: string;
   }): Promise<WPMedia> {
-    // Fetch the media file from URL
-    const mediaResponse = await fetch(params.url);
+    // Validate URL for SSRF protection
+    validateExternalUrl(params.url, 'url');
+
+    // Fetch the media file from URL with timeout
+    const mediaResponse = await this.fetchWithTimeout(params.url);
     if (!mediaResponse.ok) {
       throw new MCPError(
         MCPErrorCodes.WORDPRESS_API_ERROR,
@@ -203,9 +236,9 @@ export class WordPressClient {
     if (params.alt_text) formData.append('alt_text', params.alt_text);
     if (params.caption) formData.append('caption', params.caption);
 
-    // Upload to WordPress
+    // Upload to WordPress with timeout
     const uploadUrl = `${this.baseUrl}/wp-json/wp/v2/media`;
-    const response = await fetch(uploadUrl, {
+    const response = await this.fetchWithTimeout(uploadUrl, {
       method: 'POST',
       headers: {
         Authorization: this.authHeader,
@@ -214,21 +247,7 @@ export class WordPressClient {
     });
 
     if (!response.ok) {
-      let errorData: WPErrorResponse;
-      try {
-        errorData = await response.json();
-      } catch {
-        throw new MCPError(
-          MCPErrorCodes.WORDPRESS_API_ERROR,
-          `Media upload failed: ${response.status} ${response.statusText}`
-        );
-      }
-
-      throw new MCPError(
-        MCPErrorCodes.WORDPRESS_API_ERROR,
-        `Media upload failed: ${errorData.message}`,
-        errorData
-      );
+      await this.handleErrorResponse(response, 'Media upload failed');
     }
 
     return response.json();
@@ -258,9 +277,9 @@ export class WordPressClient {
     if (params.alt_text) formData.append('alt_text', params.alt_text);
     if (params.caption) formData.append('caption', params.caption);
 
-    // Upload to WordPress
+    // Upload to WordPress with timeout
     const uploadUrl = `${this.baseUrl}/wp-json/wp/v2/media`;
-    const response = await fetch(uploadUrl, {
+    const response = await this.fetchWithTimeout(uploadUrl, {
       method: 'POST',
       headers: {
         Authorization: this.authHeader,
@@ -269,21 +288,7 @@ export class WordPressClient {
     });
 
     if (!response.ok) {
-      let errorData: WPErrorResponse;
-      try {
-        errorData = await response.json();
-      } catch {
-        throw new MCPError(
-          MCPErrorCodes.WORDPRESS_API_ERROR,
-          `Media upload failed: ${response.status} ${response.statusText}`
-        );
-      }
-
-      throw new MCPError(
-        MCPErrorCodes.WORDPRESS_API_ERROR,
-        `Media upload failed: ${errorData.message}`,
-        errorData
-      );
+      await this.handleErrorResponse(response, 'Media upload failed');
     }
 
     return response.json();
@@ -297,13 +302,8 @@ export class WordPressClient {
     page?: number;
     search?: string;
   } = {}): Promise<WPCategory[]> {
-    const queryParams = new URLSearchParams();
-    if (params.per_page) queryParams.set('per_page', String(params.per_page));
-    if (params.page) queryParams.set('page', String(params.page));
-    if (params.search) queryParams.set('search', params.search);
-
-    const query = queryParams.toString();
-    return this.makeRequest<WPCategory[]>(`/categories${query ? `?${query}` : ''}`);
+    const query = this.buildQueryString(params);
+    return this.makeRequest<WPCategory[]>(`/categories${query}`);
   }
 
   async getCategory(id: number): Promise<WPCategory> {
@@ -318,11 +318,8 @@ export class WordPressClient {
   }
 
   async deleteCategory(id: number, force: boolean = false): Promise<{ deleted: boolean; previous: WPCategory }> {
-    const queryParams = new URLSearchParams();
-    if (force) queryParams.set('force', 'true');
-
-    const query = queryParams.toString();
-    return this.makeRequest(`/categories/${id}${query ? `?${query}` : ''}`, {
+    const query = this.buildQueryString({ force: force || undefined });
+    return this.makeRequest(`/categories/${id}${query}`, {
       method: 'DELETE',
     });
   }
@@ -335,13 +332,8 @@ export class WordPressClient {
     page?: number;
     search?: string;
   } = {}): Promise<WPTag[]> {
-    const queryParams = new URLSearchParams();
-    if (params.per_page) queryParams.set('per_page', String(params.per_page));
-    if (params.page) queryParams.set('page', String(params.page));
-    if (params.search) queryParams.set('search', params.search);
-
-    const query = queryParams.toString();
-    return this.makeRequest<WPTag[]>(`/tags${query ? `?${query}` : ''}`);
+    const query = this.buildQueryString(params);
+    return this.makeRequest<WPTag[]>(`/tags${query}`);
   }
 
   async createTag(data: CreateTagData): Promise<WPTag> {
@@ -360,14 +352,8 @@ export class WordPressClient {
     post?: number;
     status?: string;
   } = {}): Promise<WPComment[]> {
-    const queryParams = new URLSearchParams();
-    if (params.per_page) queryParams.set('per_page', String(params.per_page));
-    if (params.page) queryParams.set('page', String(params.page));
-    if (params.post) queryParams.set('post', String(params.post));
-    if (params.status) queryParams.set('status', params.status);
-
-    const query = queryParams.toString();
-    return this.makeRequest<WPComment[]>(`/comments${query ? `?${query}` : ''}`);
+    const query = this.buildQueryString(params);
+    return this.makeRequest<WPComment[]>(`/comments${query}`);
   }
 
   async updateCommentStatus(id: number, status: 'approved' | 'pending' | 'spam' | 'trash'): Promise<WPComment> {
@@ -378,11 +364,8 @@ export class WordPressClient {
   }
 
   async deleteComment(id: number, force: boolean = false): Promise<{ deleted: boolean; previous: WPComment }> {
-    const queryParams = new URLSearchParams();
-    if (force) queryParams.set('force', 'true');
-
-    const query = queryParams.toString();
-    return this.makeRequest(`/comments/${id}${query ? `?${query}` : ''}`, {
+    const query = this.buildQueryString({ force: force || undefined });
+    return this.makeRequest(`/comments/${id}${query}`, {
       method: 'DELETE',
     });
   }

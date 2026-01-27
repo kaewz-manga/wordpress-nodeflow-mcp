@@ -90,7 +90,7 @@ export async function handleMCP(request: Request, env: Env): Promise<Response> {
 /**
  * Handle initialize method
  */
-function handleInitialize(params: any) {
+function handleInitialize(_params?: unknown) {
   return {
     protocolVersion: '2024-11-05',
     serverInfo: {

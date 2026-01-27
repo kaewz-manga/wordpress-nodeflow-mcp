@@ -7,10 +7,34 @@ import {
   validateRequiredString,
   validateOptionalString,
   validateNumber,
+  validateRequiredNumber,
   validateBoolean,
 } from '../../utils/validation';
 
-export async function handleGetCategories(args: any, client: WordPressClient) {
+// Type definitions for handler arguments
+interface GetCategoriesArgs {
+  per_page?: number;
+  page?: number;
+  search?: string;
+}
+
+interface GetCategoryArgs {
+  id: number;
+}
+
+interface CreateCategoryArgs {
+  name: string;
+  description?: string;
+  slug?: string;
+  parent?: number;
+}
+
+interface DeleteCategoryArgs {
+  id: number;
+  force?: boolean;
+}
+
+export async function handleGetCategories(args: GetCategoriesArgs, client: WordPressClient) {
   const perPage = validateNumber(args.per_page, 'per_page', false) || 10;
   const page = validateNumber(args.page, 'page', false) || 1;
   const search = validateOptionalString(args.search, 'search');
@@ -35,9 +59,8 @@ export async function handleGetCategories(args: any, client: WordPressClient) {
   };
 }
 
-export async function handleGetCategory(args: any, client: WordPressClient) {
-  const id = validateNumber(args.id, 'id', true);
-
+export async function handleGetCategory(args: GetCategoryArgs, client: WordPressClient) {
+  const id = validateRequiredNumber(args.id, 'id');
   const category = await client.getCategory(id);
 
   return {
@@ -51,7 +74,7 @@ export async function handleGetCategory(args: any, client: WordPressClient) {
   };
 }
 
-export async function handleCreateCategory(args: any, client: WordPressClient) {
+export async function handleCreateCategory(args: CreateCategoryArgs, client: WordPressClient) {
   const name = validateRequiredString(args.name, 'name');
   const description = validateOptionalString(args.description, 'description');
   const slug = validateOptionalString(args.slug, 'slug');
@@ -75,8 +98,8 @@ export async function handleCreateCategory(args: any, client: WordPressClient) {
   };
 }
 
-export async function handleDeleteCategory(args: any, client: WordPressClient) {
-  const id = validateNumber(args.id, 'id', true);
+export async function handleDeleteCategory(args: DeleteCategoryArgs, client: WordPressClient) {
+  const id = validateRequiredNumber(args.id, 'id');
   const force = validateBoolean(args.force, 'force', false);
 
   const result = await client.deleteCategory(id, force);
