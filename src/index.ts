@@ -4,13 +4,36 @@
  */
 
 import { handleMCP } from './mcp/server';
+import {
+  authenticateRequest,
+  isLegacyAuthRequest,
+  addUsageHeaders,
+  incrementUsage,
+  logUsage,
+  AuthContext,
+} from './saas';
 
 export interface Env {
+  // WordPress credentials (legacy/fallback)
   WORDPRESS_URL?: string;
   WORDPRESS_USERNAME?: string;
   WORDPRESS_APP_PASSWORD?: string;
   IMGBB_API_KEY?: string;
   ALLOWED_ORIGINS?: string;
+
+  // SaaS bindings
+  DB: D1Database;
+  RATE_LIMIT: KVNamespace;
+
+  // Tier configuration
+  TIER_FREE_LIMIT?: string;
+  TIER_STARTER_LIMIT?: string;
+  TIER_PRO_LIMIT?: string;
+  TIER_BUSINESS_LIMIT?: string;
+  TIER_FREE_RATE?: string;
+  TIER_STARTER_RATE?: string;
+  TIER_PRO_RATE?: string;
+  TIER_BUSINESS_RATE?: string;
 }
 
 /**
@@ -22,7 +45,7 @@ function handleCORS(allowedOrigins: string = '*'): Response {
     headers: {
       'Access-Control-Allow-Origin': allowedOrigins,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, x-wordpress-url, x-wordpress-username, x-wordpress-password, x-imgbb-api-key',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key, x-wordpress-url, x-wordpress-username, x-wordpress-password, x-imgbb-api-key',
       'Access-Control-Max-Age': '86400',
     },
   });
@@ -35,7 +58,7 @@ function addCORSHeaders(response: Response, allowedOrigins: string = '*'): Respo
   const newHeaders = new Headers(response.headers);
   newHeaders.set('Access-Control-Allow-Origin', allowedOrigins);
   newHeaders.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  newHeaders.set('Access-Control-Allow-Headers', 'Content-Type, x-wordpress-url, x-wordpress-username, x-wordpress-password, x-imgbb-api-key');
+  newHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key, x-wordpress-url, x-wordpress-username, x-wordpress-password, x-imgbb-api-key');
 
   return new Response(response.body, {
     status: response.status,
@@ -58,6 +81,11 @@ function handleRoot(): Response {
         '/health': 'Health check',
         '/mcp': 'MCP JSON-RPC endpoint',
       },
+      authentication: {
+        apiKey: 'Use Authorization: Bearer <api_key> or X-API-Key header',
+        legacy: 'Or use x-wordpress-* headers for backward compatibility',
+      },
+      documentation: 'https://github.com/your-repo/wordpress-nodeflow-mcp',
     }),
     {
       status: 200,
@@ -97,6 +125,8 @@ export default {
     }
 
     let response: Response;
+    let authContext: AuthContext | null = null;
+    const startTime = Date.now();
 
     // Route handling
     switch (url.pathname) {
@@ -108,9 +138,51 @@ export default {
         response = handleHealth();
         break;
 
-      case '/mcp':
-        response = await handleMCP(request, env);
+      case '/mcp': {
+        // Check if using legacy auth (WordPress headers without API key)
+        const useLegacyAuth = isLegacyAuthRequest(request);
+
+        if (useLegacyAuth) {
+          // Legacy mode: bypass SaaS auth, use WordPress headers directly
+          response = await handleMCP(request, env);
+        } else if (env.DB && env.RATE_LIMIT) {
+          // SaaS mode: authenticate with API key
+          const authResult = await authenticateRequest(request, { DB: env.DB, RATE_LIMIT: env.RATE_LIMIT });
+
+          if (!authResult.success) {
+            response = authResult.response;
+          } else {
+            authContext = authResult.context;
+
+            // Increment usage counter
+            await incrementUsage(env.DB, authContext.customerId);
+
+            // Process MCP request
+            response = await handleMCP(request, env);
+
+            // Add usage headers
+            response = addUsageHeaders(response, authContext);
+          }
+        } else {
+          // No DB/KV configured, fall back to legacy mode
+          response = await handleMCP(request, env);
+        }
+
+        // Log usage (async, don't block response)
+        if (authContext && env.DB) {
+          const responseTime = Date.now() - startTime;
+          logUsage(env.DB, {
+            apiKeyId: authContext.apiKeyId,
+            customerId: authContext.customerId,
+            toolName: 'mcp_request',
+            statusCode: response.status,
+            responseTimeMs: responseTime,
+            ipAddress: request.headers.get('CF-Connecting-IP') || undefined,
+            userAgent: request.headers.get('User-Agent') || undefined,
+          }).catch(() => {}); // Ignore logging errors
+        }
         break;
+      }
 
       default:
         response = new Response('Not Found', { status: 404 });

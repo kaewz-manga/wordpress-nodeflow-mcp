@@ -3,20 +3,65 @@ main = "src/index.ts"
 compatibility_date = "2024-11-27"
 compatibility_flags = ["nodejs_compat"]
 
-# Production environment
+# =============================================================================
+# D1 Database (SQLite) - For customers, API keys, subscriptions, usage
+# =============================================================================
+# Create with: wrangler d1 create wordpress-mcp-db
+[[d1_databases]]
+binding = "DB"
+database_name = "wordpress-mcp-db"
+database_id = "local-dev-db"  # Replace with actual ID after `wrangler d1 create`
+
+# =============================================================================
+# KV Namespace - For rate limiting and caching
+# =============================================================================
+# Create with: wrangler kv:namespace create "RATE_LIMIT"
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "local-dev-kv"  # Replace with actual ID after `wrangler kv:namespace create`
+
+# =============================================================================
+# Environment Variables
+# =============================================================================
+[vars]
+ALLOWED_ORIGINS = "*"
+# Subscription tier limits (requests per month)
+TIER_FREE_LIMIT = "1000"
+TIER_STARTER_LIMIT = "10000"
+TIER_PRO_LIMIT = "50000"
+TIER_BUSINESS_LIMIT = "200000"
+# Rate limits (requests per minute)
+TIER_FREE_RATE = "10"
+TIER_STARTER_RATE = "30"
+TIER_PRO_RATE = "100"
+TIER_BUSINESS_RATE = "300"
+
+# =============================================================================
+# Production Environment
+# =============================================================================
 [env.production]
 name = "wordpress-nodeflow-mcp"
 route = { pattern = "wordpress-mcp.nodeflow.workers.dev", zone_name = "nodeflow.workers.dev" }
 
-# Development environment
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "wordpress-mcp-db"
+database_id = "your-production-db-id"  # Replace after `wrangler d1 create`
+
+[[env.production.kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "your-production-kv-id"  # Replace after `wrangler kv:namespace create`
+
+# =============================================================================
+# Development Environment
+# =============================================================================
 [env.development]
 name = "wordpress-nodeflow-mcp-dev"
 
+# =============================================================================
 # Secrets (set via `wrangler secret put <KEY>`)
-# WORDPRESS_URL - Default WordPress site URL (e.g., https://wp.missmanga.org)
+# =============================================================================
+# WORDPRESS_URL - Default WordPress site URL
 # WORDPRESS_USERNAME - WordPress admin username
 # WORDPRESS_APP_PASSWORD - WordPress Application Password (spaces removed)
-
-# CORS settings
-[vars]
-ALLOWED_ORIGINS = "*"
+# IMGBB_API_KEY - ImgBB API key for image uploads
