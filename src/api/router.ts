@@ -13,6 +13,15 @@ import {
   handleGitHubCallback,
   handleGetProviders,
 } from './oauth-handlers';
+import {
+  handleGetBilling,
+  handleCreateCheckout,
+  handleCreatePortal,
+  handleGetInvoices,
+  handleCancelSubscription,
+  handleResumeSubscription,
+  handleGetPlans,
+} from './billing';
 import { errorResponse, getQueryParam } from './utils';
 
 // =============================================================================
@@ -26,6 +35,9 @@ export interface ApiEnv {
   GOOGLE_CLIENT_SECRET?: string;
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;
+  STRIPE_SECRET_KEY?: string;
+  STRIPE_WEBHOOK_SECRET?: string;
+  STRIPE_PUBLISHABLE_KEY?: string;
 }
 
 // =============================================================================
@@ -142,6 +154,90 @@ export async function handleApiRequest(
   }
 
   // ==========================================================================
+  // Billing Routes
+  // ==========================================================================
+
+  // GET /api/billing/plans - Get available plans (public)
+  if (path === '/api/billing/plans' && method === 'GET') {
+    return handleGetPlans();
+  }
+
+  // Check if Stripe is configured for billing routes
+  const stripeConfigured = env.STRIPE_SECRET_KEY && env.STRIPE_WEBHOOK_SECRET;
+
+  // GET /api/billing - Get billing info
+  if (path === '/api/billing' && method === 'GET') {
+    if (!stripeConfigured) {
+      return errorResponse('Billing is not configured', 503, 'BILLING_NOT_CONFIGURED');
+    }
+    return handleGetBilling(request, {
+      DB: env.DB,
+      STRIPE_SECRET_KEY: env.STRIPE_SECRET_KEY!,
+      STRIPE_WEBHOOK_SECRET: env.STRIPE_WEBHOOK_SECRET!,
+    });
+  }
+
+  // POST /api/billing/checkout - Create checkout session
+  if (path === '/api/billing/checkout' && method === 'POST') {
+    if (!stripeConfigured) {
+      return errorResponse('Billing is not configured', 503, 'BILLING_NOT_CONFIGURED');
+    }
+    return handleCreateCheckout(request, {
+      DB: env.DB,
+      STRIPE_SECRET_KEY: env.STRIPE_SECRET_KEY!,
+      STRIPE_WEBHOOK_SECRET: env.STRIPE_WEBHOOK_SECRET!,
+    });
+  }
+
+  // POST /api/billing/portal - Create billing portal session
+  if (path === '/api/billing/portal' && method === 'POST') {
+    if (!stripeConfigured) {
+      return errorResponse('Billing is not configured', 503, 'BILLING_NOT_CONFIGURED');
+    }
+    return handleCreatePortal(request, {
+      DB: env.DB,
+      STRIPE_SECRET_KEY: env.STRIPE_SECRET_KEY!,
+      STRIPE_WEBHOOK_SECRET: env.STRIPE_WEBHOOK_SECRET!,
+    });
+  }
+
+  // GET /api/billing/invoices - Get invoices
+  if (path === '/api/billing/invoices' && method === 'GET') {
+    if (!stripeConfigured) {
+      return errorResponse('Billing is not configured', 503, 'BILLING_NOT_CONFIGURED');
+    }
+    return handleGetInvoices(request, {
+      DB: env.DB,
+      STRIPE_SECRET_KEY: env.STRIPE_SECRET_KEY!,
+      STRIPE_WEBHOOK_SECRET: env.STRIPE_WEBHOOK_SECRET!,
+    });
+  }
+
+  // POST /api/billing/cancel - Cancel subscription
+  if (path === '/api/billing/cancel' && method === 'POST') {
+    if (!stripeConfigured) {
+      return errorResponse('Billing is not configured', 503, 'BILLING_NOT_CONFIGURED');
+    }
+    return handleCancelSubscription(request, {
+      DB: env.DB,
+      STRIPE_SECRET_KEY: env.STRIPE_SECRET_KEY!,
+      STRIPE_WEBHOOK_SECRET: env.STRIPE_WEBHOOK_SECRET!,
+    });
+  }
+
+  // POST /api/billing/resume - Resume subscription
+  if (path === '/api/billing/resume' && method === 'POST') {
+    if (!stripeConfigured) {
+      return errorResponse('Billing is not configured', 503, 'BILLING_NOT_CONFIGURED');
+    }
+    return handleResumeSubscription(request, {
+      DB: env.DB,
+      STRIPE_SECRET_KEY: env.STRIPE_SECRET_KEY!,
+      STRIPE_WEBHOOK_SECRET: env.STRIPE_WEBHOOK_SECRET!,
+    });
+  }
+
+  // ==========================================================================
   // Not Found
   // ==========================================================================
 
@@ -177,6 +273,15 @@ export function handleApiDocs(): Response {
           'GET /api/usage/history?days=30': 'Get daily usage history (requires auth)',
           'GET /api/usage/logs?limit=100': 'Get recent request logs (requires auth)',
           'GET /api/usage/tools?days=30': 'Get tool usage breakdown (requires auth)',
+        },
+        billing: {
+          'GET /api/billing/plans': 'Get available pricing plans (public)',
+          'GET /api/billing': 'Get billing info (requires auth)',
+          'POST /api/billing/checkout': 'Create Stripe checkout session (requires auth)',
+          'POST /api/billing/portal': 'Create Stripe billing portal session (requires auth)',
+          'GET /api/billing/invoices': 'Get invoice history (requires auth)',
+          'POST /api/billing/cancel': 'Cancel subscription (requires auth)',
+          'POST /api/billing/resume': 'Resume cancelled subscription (requires auth)',
         },
       },
       authentication: {

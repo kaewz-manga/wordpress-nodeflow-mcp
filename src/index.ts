@@ -13,6 +13,7 @@ import {
   logUsage,
   AuthContext,
 } from './saas';
+import { handleStripeWebhook } from './billing';
 
 export interface Env {
   // WordPress credentials (legacy/fallback)
@@ -31,6 +32,11 @@ export interface Env {
   GOOGLE_CLIENT_SECRET?: string;
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;
+
+  // Stripe billing
+  STRIPE_SECRET_KEY?: string;
+  STRIPE_WEBHOOK_SECRET?: string;
+  STRIPE_PUBLISHABLE_KEY?: string;
 
   // Tier configuration
   TIER_FREE_LIMIT?: string;
@@ -88,6 +94,7 @@ function handleRoot(): Response {
         '/health': 'Health check',
         '/mcp': 'MCP JSON-RPC endpoint',
         '/api': 'Dashboard REST API',
+        '/webhooks/stripe': 'Stripe webhook endpoint',
       },
       authentication: {
         mcp: 'Use Authorization: Bearer <api_key> or X-API-Key header',
@@ -150,6 +157,9 @@ export default {
           GOOGLE_CLIENT_SECRET: env.GOOGLE_CLIENT_SECRET,
           GITHUB_CLIENT_ID: env.GITHUB_CLIENT_ID,
           GITHUB_CLIENT_SECRET: env.GITHUB_CLIENT_SECRET,
+          STRIPE_SECRET_KEY: env.STRIPE_SECRET_KEY,
+          STRIPE_WEBHOOK_SECRET: env.STRIPE_WEBHOOK_SECRET,
+          STRIPE_PUBLISHABLE_KEY: env.STRIPE_PUBLISHABLE_KEY,
         });
       } else {
         response = new Response(
@@ -168,6 +178,29 @@ export default {
       case '/health':
         response = handleHealth();
         break;
+
+      case '/webhooks/stripe': {
+        // Handle Stripe webhooks
+        if (request.method !== 'POST') {
+          response = new Response('Method Not Allowed', { status: 405 });
+          break;
+        }
+
+        if (!env.STRIPE_SECRET_KEY || !env.STRIPE_WEBHOOK_SECRET || !env.DB) {
+          response = new Response(
+            JSON.stringify({ error: 'Stripe webhooks not configured' }),
+            { status: 503, headers: { 'Content-Type': 'application/json' } }
+          );
+          break;
+        }
+
+        response = await handleStripeWebhook(request, {
+          DB: env.DB,
+          STRIPE_SECRET_KEY: env.STRIPE_SECRET_KEY,
+          STRIPE_WEBHOOK_SECRET: env.STRIPE_WEBHOOK_SECRET,
+        });
+        break;
+      }
 
       case '/mcp': {
         // Check if using legacy auth (WordPress headers without API key)
