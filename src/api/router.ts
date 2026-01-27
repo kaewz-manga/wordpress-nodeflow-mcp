@@ -22,6 +22,37 @@ import {
   handleResumeSubscription,
   handleGetPlans,
 } from './billing';
+import {
+  handleListWebhooks,
+  handleCreateWebhook,
+  handleGetWebhook,
+  handleUpdateWebhook,
+  handleDeleteWebhook,
+  handleTestWebhook,
+  handleRegenerateSecret,
+  handleGetSecret,
+  handleGetDeliveries,
+  handleGetEventTypes,
+} from './webhooks';
+import {
+  handleListAuditLogs,
+  handleGetAuditLog,
+  handleExportAuditLogs,
+  handleGetActionTypes,
+} from './audit';
+import {
+  handleGetTeam,
+  handleCreateTeam,
+  handleUpdateTeam,
+  handleDeleteTeam,
+  handleListMembers,
+  handleInviteMember,
+  handleUpdateMember,
+  handleRemoveMember,
+  handleCancelInvite,
+  handleAcceptInvite,
+  handleGetRoles,
+} from './teams';
 import { errorResponse, getQueryParam } from './utils';
 
 // =============================================================================
@@ -238,6 +269,152 @@ export async function handleApiRequest(
   }
 
   // ==========================================================================
+  // Webhook Routes
+  // ==========================================================================
+
+  // GET /api/webhooks/events - List webhook event types (public)
+  if (path === '/api/webhooks/events' && method === 'GET') {
+    return handleGetEventTypes();
+  }
+
+  // GET /api/webhooks - List webhooks
+  if (path === '/api/webhooks' && method === 'GET') {
+    return handleListWebhooks(request, env.DB);
+  }
+
+  // POST /api/webhooks - Create webhook
+  if (path === '/api/webhooks' && method === 'POST') {
+    return handleCreateWebhook(request, env.DB);
+  }
+
+  // Webhook ID routes
+  const webhookIdMatch = path.match(/^\/api\/webhooks\/([a-zA-Z0-9-]+)$/);
+  if (webhookIdMatch) {
+    const webhookId = webhookIdMatch[1];
+
+    if (method === 'GET') {
+      return handleGetWebhook(request, env.DB, webhookId);
+    }
+    if (method === 'PATCH') {
+      return handleUpdateWebhook(request, env.DB, webhookId);
+    }
+    if (method === 'DELETE') {
+      return handleDeleteWebhook(request, env.DB, webhookId);
+    }
+  }
+
+  // POST /api/webhooks/:id/test - Test webhook
+  const webhookTestMatch = path.match(/^\/api\/webhooks\/([a-zA-Z0-9-]+)\/test$/);
+  if (webhookTestMatch && method === 'POST') {
+    return handleTestWebhook(request, env.DB, webhookTestMatch[1]);
+  }
+
+  // POST /api/webhooks/:id/secret - Regenerate secret
+  const webhookSecretMatch = path.match(/^\/api\/webhooks\/([a-zA-Z0-9-]+)\/secret$/);
+  if (webhookSecretMatch) {
+    if (method === 'POST') {
+      return handleRegenerateSecret(request, env.DB, webhookSecretMatch[1]);
+    }
+    if (method === 'GET') {
+      return handleGetSecret(request, env.DB, webhookSecretMatch[1]);
+    }
+  }
+
+  // GET /api/webhooks/:id/deliveries - Get delivery history
+  const webhookDeliveriesMatch = path.match(/^\/api\/webhooks\/([a-zA-Z0-9-]+)\/deliveries$/);
+  if (webhookDeliveriesMatch && method === 'GET') {
+    return handleGetDeliveries(request, env.DB, webhookDeliveriesMatch[1]);
+  }
+
+  // ==========================================================================
+  // Audit Log Routes
+  // ==========================================================================
+
+  // GET /api/audit/actions - List audit action types (public)
+  if (path === '/api/audit/actions' && method === 'GET') {
+    return handleGetActionTypes();
+  }
+
+  // GET /api/audit/export - Export audit logs
+  if (path === '/api/audit/export' && method === 'GET') {
+    return handleExportAuditLogs(request, env.DB);
+  }
+
+  // GET /api/audit - List audit logs
+  if (path === '/api/audit' && method === 'GET') {
+    return handleListAuditLogs(request, env.DB);
+  }
+
+  // GET /api/audit/:id - Get audit log entry
+  const auditIdMatch = path.match(/^\/api\/audit\/([a-zA-Z0-9-]+)$/);
+  if (auditIdMatch && method === 'GET') {
+    return handleGetAuditLog(request, env.DB, auditIdMatch[1]);
+  }
+
+  // ==========================================================================
+  // Team Routes
+  // ==========================================================================
+
+  // GET /api/team/roles - List team roles (public)
+  if (path === '/api/team/roles' && method === 'GET') {
+    return handleGetRoles();
+  }
+
+  // POST /api/team/invites/accept - Accept invite (public)
+  if (path === '/api/team/invites/accept' && method === 'POST') {
+    return handleAcceptInvite(request, env.DB);
+  }
+
+  // GET /api/team - Get team
+  if (path === '/api/team' && method === 'GET') {
+    return handleGetTeam(request, env.DB);
+  }
+
+  // POST /api/team - Create team
+  if (path === '/api/team' && method === 'POST') {
+    return handleCreateTeam(request, env.DB);
+  }
+
+  // PATCH /api/team - Update team
+  if (path === '/api/team' && method === 'PATCH') {
+    return handleUpdateTeam(request, env.DB);
+  }
+
+  // DELETE /api/team - Delete team
+  if (path === '/api/team' && method === 'DELETE') {
+    return handleDeleteTeam(request, env.DB);
+  }
+
+  // GET /api/team/members - List members
+  if (path === '/api/team/members' && method === 'GET') {
+    return handleListMembers(request, env.DB);
+  }
+
+  // POST /api/team/members - Invite member
+  if (path === '/api/team/members' && method === 'POST') {
+    return handleInviteMember(request, env.DB);
+  }
+
+  // Team member routes
+  const memberIdMatch = path.match(/^\/api\/team\/members\/([a-zA-Z0-9-]+)$/);
+  if (memberIdMatch) {
+    const memberId = memberIdMatch[1];
+
+    if (method === 'PATCH') {
+      return handleUpdateMember(request, env.DB, memberId);
+    }
+    if (method === 'DELETE') {
+      return handleRemoveMember(request, env.DB, memberId);
+    }
+  }
+
+  // POST /api/team/invites/:id/cancel - Cancel invite
+  const cancelInviteMatch = path.match(/^\/api\/team\/invites\/([a-zA-Z0-9-]+)\/cancel$/);
+  if (cancelInviteMatch && method === 'POST') {
+    return handleCancelInvite(request, env.DB, cancelInviteMatch[1]);
+  }
+
+  // ==========================================================================
   // Not Found
   // ==========================================================================
 
@@ -282,6 +459,37 @@ export function handleApiDocs(): Response {
           'GET /api/billing/invoices': 'Get invoice history (requires auth)',
           'POST /api/billing/cancel': 'Cancel subscription (requires auth)',
           'POST /api/billing/resume': 'Resume cancelled subscription (requires auth)',
+        },
+        webhooks: {
+          'GET /api/webhooks/events': 'List available webhook event types (public)',
+          'GET /api/webhooks': 'List webhooks (requires auth)',
+          'POST /api/webhooks': 'Create webhook (requires auth)',
+          'GET /api/webhooks/:id': 'Get webhook (requires auth)',
+          'PATCH /api/webhooks/:id': 'Update webhook (requires auth)',
+          'DELETE /api/webhooks/:id': 'Delete webhook (requires auth)',
+          'POST /api/webhooks/:id/test': 'Test webhook (requires auth)',
+          'GET /api/webhooks/:id/secret': 'Get webhook secret (requires auth)',
+          'POST /api/webhooks/:id/secret': 'Regenerate webhook secret (requires auth)',
+          'GET /api/webhooks/:id/deliveries': 'Get delivery history (requires auth)',
+        },
+        audit: {
+          'GET /api/audit/actions': 'List audit action types (public)',
+          'GET /api/audit': 'List audit logs (requires auth)',
+          'GET /api/audit/:id': 'Get audit log entry (requires auth)',
+          'GET /api/audit/export': 'Export audit logs as JSON/CSV (requires auth)',
+        },
+        team: {
+          'GET /api/team/roles': 'List team roles and permissions (public)',
+          'GET /api/team': 'Get team info (requires auth)',
+          'POST /api/team': 'Create team (requires auth, Pro+ tier)',
+          'PATCH /api/team': 'Update team (requires auth)',
+          'DELETE /api/team': 'Delete team (requires auth)',
+          'GET /api/team/members': 'List team members (requires auth)',
+          'POST /api/team/members': 'Invite team member (requires auth)',
+          'PATCH /api/team/members/:id': 'Update member role (requires auth)',
+          'DELETE /api/team/members/:id': 'Remove team member (requires auth)',
+          'POST /api/team/invites/:id/cancel': 'Cancel invite (requires auth)',
+          'POST /api/team/invites/accept': 'Accept invite (public)',
         },
       },
       authentication: {
