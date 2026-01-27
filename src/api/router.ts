@@ -6,7 +6,27 @@
 import { handleRegister, handleLogin, handleGetMe } from './auth';
 import { handleListKeys, handleCreateKey, handleRevokeKey, handleDeleteKey } from './keys';
 import { handleGetUsage, handleGetUsageHistory, handleGetUsageLogs, handleGetToolUsage } from './usage';
+import {
+  handleGoogleAuth,
+  handleGitHubAuth,
+  handleGoogleCallback,
+  handleGitHubCallback,
+  handleGetProviders,
+} from './oauth-handlers';
 import { errorResponse, getQueryParam } from './utils';
+
+// =============================================================================
+// Types
+// =============================================================================
+
+export interface ApiEnv {
+  DB: D1Database;
+  RATE_LIMIT: KVNamespace;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  GITHUB_CLIENT_ID?: string;
+  GITHUB_CLIENT_SECRET?: string;
+}
 
 // =============================================================================
 // Router
@@ -17,11 +37,40 @@ import { errorResponse, getQueryParam } from './utils';
  */
 export async function handleApiRequest(
   request: Request,
-  db: D1Database
+  env: ApiEnv
 ): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method;
+
+  // ==========================================================================
+  // OAuth Routes
+  // ==========================================================================
+
+  // GET /api/auth/providers - List available OAuth providers
+  if (path === '/api/auth/providers' && method === 'GET') {
+    return handleGetProviders(env);
+  }
+
+  // GET /api/auth/google - Initiate Google OAuth
+  if (path === '/api/auth/google' && method === 'GET') {
+    return handleGoogleAuth(request, env);
+  }
+
+  // GET /api/auth/github - Initiate GitHub OAuth
+  if (path === '/api/auth/github' && method === 'GET') {
+    return handleGitHubAuth(request, env);
+  }
+
+  // GET /api/auth/callback/google - Google OAuth callback
+  if (path === '/api/auth/callback/google' && method === 'GET') {
+    return handleGoogleCallback(request, env);
+  }
+
+  // GET /api/auth/callback/github - GitHub OAuth callback
+  if (path === '/api/auth/callback/github' && method === 'GET') {
+    return handleGitHubCallback(request, env);
+  }
 
   // ==========================================================================
   // Auth Routes
@@ -29,17 +78,17 @@ export async function handleApiRequest(
 
   // POST /api/auth/register
   if (path === '/api/auth/register' && method === 'POST') {
-    return handleRegister(request, db);
+    return handleRegister(request, env.DB);
   }
 
   // POST /api/auth/login
   if (path === '/api/auth/login' && method === 'POST') {
-    return handleLogin(request, db);
+    return handleLogin(request, env.DB);
   }
 
   // GET /api/auth/me
   if (path === '/api/auth/me' && method === 'GET') {
-    return handleGetMe(request, db);
+    return handleGetMe(request, env.DB);
   }
 
   // ==========================================================================
@@ -48,12 +97,12 @@ export async function handleApiRequest(
 
   // GET /api/keys
   if (path === '/api/keys' && method === 'GET') {
-    return handleListKeys(request, db);
+    return handleListKeys(request, env.DB);
   }
 
   // POST /api/keys
   if (path === '/api/keys' && method === 'POST') {
-    return handleCreateKey(request, db);
+    return handleCreateKey(request, env.DB);
   }
 
   // DELETE /api/keys/:id
@@ -63,9 +112,9 @@ export async function handleApiRequest(
     const permanent = getQueryParam(url, 'permanent') === 'true';
 
     if (permanent) {
-      return handleDeleteKey(request, db, keyId);
+      return handleDeleteKey(request, env.DB, keyId);
     }
-    return handleRevokeKey(request, db, keyId);
+    return handleRevokeKey(request, env.DB, keyId);
   }
 
   // ==========================================================================
@@ -74,22 +123,22 @@ export async function handleApiRequest(
 
   // GET /api/usage
   if (path === '/api/usage' && method === 'GET') {
-    return handleGetUsage(request, db);
+    return handleGetUsage(request, env.DB);
   }
 
   // GET /api/usage/history
   if (path === '/api/usage/history' && method === 'GET') {
-    return handleGetUsageHistory(request, db);
+    return handleGetUsageHistory(request, env.DB);
   }
 
   // GET /api/usage/logs
   if (path === '/api/usage/logs' && method === 'GET') {
-    return handleGetUsageLogs(request, db);
+    return handleGetUsageLogs(request, env.DB);
   }
 
   // GET /api/usage/tools
   if (path === '/api/usage/tools' && method === 'GET') {
-    return handleGetToolUsage(request, db);
+    return handleGetToolUsage(request, env.DB);
   }
 
   // ==========================================================================
@@ -110,9 +159,12 @@ export function handleApiDocs(): Response {
       version: '1.0.0',
       endpoints: {
         auth: {
-          'POST /api/auth/register': 'Create new account',
-          'POST /api/auth/login': 'Login and get JWT token',
+          'POST /api/auth/register': 'Create new account with email/password',
+          'POST /api/auth/login': 'Login with email/password',
           'GET /api/auth/me': 'Get current user info (requires auth)',
+          'GET /api/auth/providers': 'List available OAuth providers',
+          'GET /api/auth/google': 'Login with Google',
+          'GET /api/auth/github': 'Login with GitHub',
         },
         keys: {
           'GET /api/keys': 'List all API keys (requires auth)',
@@ -128,9 +180,15 @@ export function handleApiDocs(): Response {
         },
       },
       authentication: {
-        type: 'Bearer Token',
-        header: 'Authorization: Bearer <jwt_token>',
-        note: 'Get token from /api/auth/login or /api/auth/register',
+        jwt: {
+          type: 'Bearer Token',
+          header: 'Authorization: Bearer <jwt_token>',
+          note: 'Get token from /api/auth/login, /api/auth/register, or OAuth callback',
+        },
+        oauth: {
+          google: 'GET /api/auth/google?return_url=/dashboard',
+          github: 'GET /api/auth/github?return_url=/dashboard',
+        },
       },
     }),
     {

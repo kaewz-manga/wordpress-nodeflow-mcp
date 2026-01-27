@@ -303,3 +303,124 @@ export async function checkUsageLimit(
     limit: subscription.requests_limit,
   };
 }
+
+// =============================================================================
+// OAuth Operations
+// =============================================================================
+
+export type OAuthProvider = 'google' | 'github';
+
+export interface OAuthUserData {
+  provider: OAuthProvider;
+  providerId: string;
+  email: string;
+  name: string | null;
+  picture: string | null;
+}
+
+/**
+ * Find customer by OAuth provider
+ */
+export async function findCustomerByOAuth(
+  db: D1Database,
+  provider: OAuthProvider,
+  providerId: string
+): Promise<Customer | null> {
+  return db
+    .prepare('SELECT * FROM customers WHERE oauth_provider = ? AND oauth_provider_id = ? AND is_active = 1')
+    .bind(provider, providerId)
+    .first<Customer>();
+}
+
+/**
+ * Create customer via OAuth (no password needed)
+ */
+export async function createOAuthCustomer(
+  db: D1Database,
+  data: OAuthUserData
+): Promise<{ customer: Customer; subscription: Subscription }> {
+  const customerId = crypto.randomUUID();
+  const subscriptionId = crypto.randomUUID();
+  const tierConfig = TIER_CONFIGS.free;
+
+  // Create customer with OAuth placeholder password
+  await db
+    .prepare(
+      `INSERT INTO customers (id, email, name, password_hash, tier, is_active, email_verified, oauth_provider, oauth_provider_id, picture_url, created_at, updated_at)
+       VALUES (?, ?, ?, 'oauth', 'free', 1, 1, ?, ?, ?, datetime('now'), datetime('now'))`
+    )
+    .bind(
+      customerId,
+      data.email.toLowerCase(),
+      data.name,
+      data.provider,
+      data.providerId,
+      data.picture
+    )
+    .run();
+
+  // Create free subscription
+  const now = new Date();
+  const cycleEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+  await db
+    .prepare(
+      `INSERT INTO subscriptions (id, customer_id, tier, status, requests_limit, requests_used, rate_limit, billing_cycle_start, billing_cycle_end, created_at, updated_at)
+       VALUES (?, ?, 'free', 'active', ?, 0, ?, datetime('now'), ?, datetime('now'), datetime('now'))`
+    )
+    .bind(subscriptionId, customerId, tierConfig.requestsLimit, tierConfig.rateLimit, cycleEnd.toISOString())
+    .run();
+
+  const customer = await findCustomerById(db, customerId);
+  const subscription = await findSubscriptionByCustomerId(db, customerId);
+
+  return { customer: customer!, subscription: subscription! };
+}
+
+/**
+ * Link OAuth provider to existing customer
+ */
+export async function linkOAuthProvider(
+  db: D1Database,
+  customerId: string,
+  data: OAuthUserData
+): Promise<void> {
+  await db
+    .prepare(
+      `UPDATE customers
+       SET oauth_provider = ?, oauth_provider_id = ?, picture_url = ?, email_verified = 1, updated_at = datetime('now')
+       WHERE id = ?`
+    )
+    .bind(data.provider, data.providerId, data.picture, customerId)
+    .run();
+}
+
+/**
+ * Find or create customer via OAuth
+ * Returns existing customer if email matches, creates new if not
+ */
+export async function findOrCreateOAuthCustomer(
+  db: D1Database,
+  data: OAuthUserData
+): Promise<{ customer: Customer; subscription: Subscription; isNew: boolean }> {
+  // First, try to find by OAuth provider ID
+  let customer = await findCustomerByOAuth(db, data.provider, data.providerId);
+  if (customer) {
+    const subscription = await findSubscriptionByCustomerId(db, customer.id);
+    return { customer, subscription: subscription!, isNew: false };
+  }
+
+  // Second, try to find by email
+  customer = await findCustomerByEmail(db, data.email);
+  if (customer) {
+    // Link OAuth to existing account
+    await linkOAuthProvider(db, customer.id, data);
+    customer = await findCustomerById(db, customer.id);
+    const subscription = await findSubscriptionByCustomerId(db, customer!.id);
+    return { customer: customer!, subscription: subscription!, isNew: false };
+  }
+
+  // Create new customer
+  const result = await createOAuthCustomer(db, data);
+  return { ...result, isNew: true };
+}

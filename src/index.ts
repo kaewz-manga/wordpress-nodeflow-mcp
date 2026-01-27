@@ -26,6 +26,12 @@ export interface Env {
   DB: D1Database;
   RATE_LIMIT: KVNamespace;
 
+  // OAuth credentials
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  GITHUB_CLIENT_ID?: string;
+  GITHUB_CLIENT_SECRET?: string;
+
   // Tier configuration
   TIER_FREE_LIMIT?: string;
   TIER_STARTER_LIMIT?: string;
@@ -136,8 +142,15 @@ export default {
     if (url.pathname.startsWith('/api')) {
       if (url.pathname === '/api') {
         response = handleApiDocs();
-      } else if (env.DB) {
-        response = await handleApiRequest(request, env.DB);
+      } else if (env.DB && env.RATE_LIMIT) {
+        response = await handleApiRequest(request, {
+          DB: env.DB,
+          RATE_LIMIT: env.RATE_LIMIT,
+          GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
+          GOOGLE_CLIENT_SECRET: env.GOOGLE_CLIENT_SECRET,
+          GITHUB_CLIENT_ID: env.GITHUB_CLIENT_ID,
+          GITHUB_CLIENT_SECRET: env.GITHUB_CLIENT_SECRET,
+        });
       } else {
         response = new Response(
           JSON.stringify({ error: { message: 'API not configured', code: 'API_NOT_CONFIGURED' } }),
