@@ -1,0 +1,268 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { api } from '../utils/api';
+import { formatNumber, formatPercentage } from '../utils/format';
+import {
+  Activity,
+  Key,
+  TrendingUp,
+  AlertTriangle,
+  ArrowUpRight,
+  Clock,
+  Zap,
+} from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+
+interface DashboardData {
+  stats: {
+    totalRequests: number;
+    requestsThisMonth: number;
+    requestsLimit: number;
+    activeApiKeys: number;
+    avgResponseTime: number;
+    errorRate: number;
+  };
+  usageChart: Array<{
+    date: string;
+    requests: number;
+  }>;
+  recentActivity: Array<{
+    id: string;
+    tool: string;
+    status: 'success' | 'error';
+    timestamp: string;
+  }>;
+}
+
+export default function Dashboard() {
+  const { user } = useAuth();
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  async function loadDashboard() {
+    try {
+      const result = await api.get<DashboardData>('/api/dashboard');
+      setData(result);
+    } catch (error) {
+      console.error('Failed to load dashboard:', error);
+      // Set mock data for demo
+      setData({
+        stats: {
+          totalRequests: 12453,
+          requestsThisMonth: 3421,
+          requestsLimit: 10000,
+          activeApiKeys: 3,
+          avgResponseTime: 245,
+          errorRate: 0.5,
+        },
+        usageChart: Array.from({ length: 7 }, (_, i) => ({
+          date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' }),
+          requests: Math.floor(Math.random() * 500) + 200,
+        })),
+        recentActivity: [
+          { id: '1', tool: 'wp_create_post', status: 'success', timestamp: new Date().toISOString() },
+          { id: '2', tool: 'wp_get_posts', status: 'success', timestamp: new Date(Date.now() - 300000).toISOString() },
+          { id: '3', tool: 'wp_upload_media', status: 'error', timestamp: new Date(Date.now() - 600000).toISOString() },
+        ],
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  const usagePercent = data ? (data.stats.requestsThisMonth / data.stats.requestsLimit) * 100 : 0;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600">Welcome back, {user?.name || user?.email?.split('@')[0]}</p>
+        </div>
+        <Link to="/dashboard/api-keys" className="btn btn-primary">
+          <Key className="h-4 w-4 mr-2" />
+          New API Key
+        </Link>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="stat-card">
+          <div className="flex items-center justify-between">
+            <Activity className="h-8 w-8 text-primary-500" />
+            <span className="text-xs text-green-600 font-medium flex items-center">
+              <ArrowUpRight className="h-3 w-3" />
+              12%
+            </span>
+          </div>
+          <div className="stat-value mt-4">{formatNumber(data?.stats.requestsThisMonth || 0)}</div>
+          <div className="stat-label">Requests this month</div>
+        </div>
+
+        <div className="stat-card">
+          <div className="flex items-center justify-between">
+            <Key className="h-8 w-8 text-blue-500" />
+          </div>
+          <div className="stat-value mt-4">{data?.stats.activeApiKeys || 0}</div>
+          <div className="stat-label">Active API Keys</div>
+        </div>
+
+        <div className="stat-card">
+          <div className="flex items-center justify-between">
+            <Clock className="h-8 w-8 text-green-500" />
+          </div>
+          <div className="stat-value mt-4">{data?.stats.avgResponseTime || 0}ms</div>
+          <div className="stat-label">Avg Response Time</div>
+        </div>
+
+        <div className="stat-card">
+          <div className="flex items-center justify-between">
+            <AlertTriangle className="h-8 w-8 text-orange-500" />
+          </div>
+          <div className="stat-value mt-4">{formatPercentage(data?.stats.errorRate || 0)}</div>
+          <div className="stat-label">Error Rate</div>
+        </div>
+      </div>
+
+      {/* Usage Progress */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Monthly Usage</h2>
+          <Link to="/dashboard/billing" className="text-sm text-primary-600 hover:text-primary-700">
+            Upgrade plan
+          </Link>
+        </div>
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">
+              {formatNumber(data?.stats.requestsThisMonth || 0)} / {formatNumber(data?.stats.requestsLimit || 0)} requests
+            </span>
+            <span className="font-medium">{formatPercentage(usagePercent)}</span>
+          </div>
+          <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${
+                usagePercent > 90 ? 'bg-red-500' : usagePercent > 70 ? 'bg-orange-500' : 'bg-primary-500'
+              }`}
+              style={{ width: `${Math.min(usagePercent, 100)}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Usage Chart */}
+        <div className="card">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Request Volume</h2>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data?.usageChart || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="date" stroke="#6b7280" fontSize={12} />
+                <YAxis stroke="#6b7280" fontSize={12} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="requests"
+                  stroke="#0ea5e9"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+            <Link to="/dashboard/usage" className="text-sm text-primary-600 hover:text-primary-700">
+              View all
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {data?.recentActivity.map((activity) => (
+              <div
+                key={activity.id}
+                className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+              >
+                <div className="flex items-center">
+                  <div
+                    className={`w-2 h-2 rounded-full mr-3 ${
+                      activity.status === 'success' ? 'bg-green-500' : 'bg-red-500'
+                    }`}
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{activity.tool}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(activity.timestamp).toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={`text-xs px-2 py-1 rounded-full ${
+                    activity.status === 'success'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}
+                >
+                  {activity.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Start */}
+      <div className="card bg-gradient-to-r from-primary-500 to-primary-600 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Quick Start Guide</h2>
+            <p className="text-primary-100 text-sm">
+              Learn how to integrate WordPress MCP with your AI client
+            </p>
+          </div>
+          <Zap className="h-12 w-12 text-primary-200" />
+        </div>
+        <div className="mt-4 flex space-x-3">
+          <Link to="/docs" className="btn bg-white text-primary-600 hover:bg-gray-100 text-sm">
+            Read Docs
+          </Link>
+          <button className="btn bg-primary-400 text-white hover:bg-primary-300 text-sm">
+            Watch Tutorial
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
