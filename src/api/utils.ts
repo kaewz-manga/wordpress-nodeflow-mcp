@@ -207,3 +207,22 @@ export function isValidPassword(password: string): { valid: boolean; message?: s
   }
   return { valid: true };
 }
+
+// =============================================================================
+// Database Helpers
+// =============================================================================
+
+/**
+ * Get customer by ID
+ */
+export async function getCustomer(
+  db: D1Database,
+  customerId: string
+): Promise<{ id: string; email: string; tier: string; name: string | null } | null> {
+  const customer = await db
+    .prepare('SELECT id, email, tier, name FROM customers WHERE id = ?')
+    .bind(customerId)
+    .first<{ id: string; email: string; tier: string; name: string | null }>();
+
+  return customer || null;
+}

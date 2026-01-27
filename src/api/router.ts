@@ -53,6 +53,15 @@ import {
   handleAcceptInvite,
   handleGetRoles,
 } from './teams';
+import {
+  handleListDomains,
+  handleCreateDomain,
+  handleGetDomain,
+  handleVerifyDomain,
+  handleRefreshDomain,
+  handleDeleteDomain,
+  handleGetDomainLimits,
+} from './domains';
 import { errorResponse, getQueryParam } from './utils';
 
 // =============================================================================
@@ -415,6 +424,50 @@ export async function handleApiRequest(
   }
 
   // ==========================================================================
+  // Custom Domains Routes (Business and Enterprise tiers)
+  // ==========================================================================
+
+  // GET /api/domains/limits - Get domain limits for current tier
+  if (path === '/api/domains/limits' && method === 'GET') {
+    return handleGetDomainLimits(request, env.DB);
+  }
+
+  // GET /api/domains - List domains
+  if (path === '/api/domains' && method === 'GET') {
+    return handleListDomains(request, env.DB);
+  }
+
+  // POST /api/domains - Create domain
+  if (path === '/api/domains' && method === 'POST') {
+    return handleCreateDomain(request, env.DB);
+  }
+
+  // Domain ID routes
+  const domainIdMatch = path.match(/^\/api\/domains\/([a-zA-Z0-9_-]+)$/);
+  if (domainIdMatch) {
+    const domainId = domainIdMatch[1];
+
+    if (method === 'GET') {
+      return handleGetDomain(request, env.DB, domainId);
+    }
+    if (method === 'DELETE') {
+      return handleDeleteDomain(request, env.DB, domainId);
+    }
+  }
+
+  // POST /api/domains/:id/verify - Verify domain DNS
+  const domainVerifyMatch = path.match(/^\/api\/domains\/([a-zA-Z0-9_-]+)\/verify$/);
+  if (domainVerifyMatch && method === 'POST') {
+    return handleVerifyDomain(request, env.DB, domainVerifyMatch[1]);
+  }
+
+  // POST /api/domains/:id/refresh - Refresh domain status
+  const domainRefreshMatch = path.match(/^\/api\/domains\/([a-zA-Z0-9_-]+)\/refresh$/);
+  if (domainRefreshMatch && method === 'POST') {
+    return handleRefreshDomain(request, env.DB, domainRefreshMatch[1]);
+  }
+
+  // ==========================================================================
   // Not Found
   // ==========================================================================
 
@@ -490,6 +543,15 @@ export function handleApiDocs(): Response {
           'DELETE /api/team/members/:id': 'Remove team member (requires auth)',
           'POST /api/team/invites/:id/cancel': 'Cancel invite (requires auth)',
           'POST /api/team/invites/accept': 'Accept invite (public)',
+        },
+        domains: {
+          'GET /api/domains/limits': 'Get domain limits for current tier (requires auth)',
+          'GET /api/domains': 'List custom domains (requires auth, Business+ tier)',
+          'POST /api/domains': 'Add custom domain (requires auth, Business+ tier)',
+          'GET /api/domains/:id': 'Get domain details (requires auth)',
+          'DELETE /api/domains/:id': 'Delete custom domain (requires auth)',
+          'POST /api/domains/:id/verify': 'Verify domain DNS configuration (requires auth)',
+          'POST /api/domains/:id/refresh': 'Refresh domain status (requires auth)',
         },
       },
       authentication: {
