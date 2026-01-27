@@ -4,6 +4,7 @@
  */
 
 import { handleMCP } from './mcp/server';
+import { handleApiRequest, handleApiDocs } from './api';
 import {
   authenticateRequest,
   isLegacyAuthRequest,
@@ -44,7 +45,7 @@ function handleCORS(allowedOrigins: string = '*'): Response {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': allowedOrigins,
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-API-Key, x-wordpress-url, x-wordpress-username, x-wordpress-password, x-imgbb-api-key',
       'Access-Control-Max-Age': '86400',
     },
@@ -57,7 +58,7 @@ function handleCORS(allowedOrigins: string = '*'): Response {
 function addCORSHeaders(response: Response, allowedOrigins: string = '*'): Response {
   const newHeaders = new Headers(response.headers);
   newHeaders.set('Access-Control-Allow-Origin', allowedOrigins);
-  newHeaders.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  newHeaders.set('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   newHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key, x-wordpress-url, x-wordpress-username, x-wordpress-password, x-imgbb-api-key');
 
   return new Response(response.body, {
@@ -80,9 +81,11 @@ function handleRoot(): Response {
         '/': 'Server information',
         '/health': 'Health check',
         '/mcp': 'MCP JSON-RPC endpoint',
+        '/api': 'Dashboard REST API',
       },
       authentication: {
-        apiKey: 'Use Authorization: Bearer <api_key> or X-API-Key header',
+        mcp: 'Use Authorization: Bearer <api_key> or X-API-Key header',
+        api: 'Use Authorization: Bearer <jwt_token> from /api/auth/login',
         legacy: 'Or use x-wordpress-* headers for backward compatibility',
       },
       documentation: 'https://github.com/your-repo/wordpress-nodeflow-mcp',
@@ -129,6 +132,21 @@ export default {
     const startTime = Date.now();
 
     // Route handling
+    // API routes (/api/*)
+    if (url.pathname.startsWith('/api')) {
+      if (url.pathname === '/api') {
+        response = handleApiDocs();
+      } else if (env.DB) {
+        response = await handleApiRequest(request, env.DB);
+      } else {
+        response = new Response(
+          JSON.stringify({ error: { message: 'API not configured', code: 'API_NOT_CONFIGURED' } }),
+          { status: 503, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      return addCORSHeaders(response, allowedOrigins);
+    }
+
     switch (url.pathname) {
       case '/':
         response = handleRoot();
