@@ -4,8 +4,8 @@ import { api } from '../utils/api';
 interface User {
   id: string;
   email: string;
-  name: string | null;
-  tier: string;
+  plan: string;
+  is_admin: number;
 }
 
 interface AuthContextType {
@@ -13,7 +13,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name?: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -36,8 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const data = await api.get('/api/auth/me');
-      setUser(data.customer);
+      const data = await api.get('/api/user/profile');
+      setUser(data.data);
     } catch {
       localStorage.removeItem('token');
     } finally {
@@ -47,14 +47,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(email: string, password: string) {
     const data = await api.post('/api/auth/login', { email, password });
-    localStorage.setItem('token', data.token);
-    setUser(data.customer);
+    localStorage.setItem('token', data.data.token);
+    setUser(data.data.user);
   }
 
-  async function register(email: string, password: string, name?: string) {
-    const data = await api.post('/api/auth/register', { email, password, name });
-    localStorage.setItem('token', data.token);
-    setUser(data.customer);
+  async function register(email: string, password: string) {
+    await api.post('/api/auth/register', { email, password });
+    // Auto-login after registration
+    await login(email, password);
   }
 
   function logout() {
@@ -64,8 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function refreshUser() {
     try {
-      const data = await api.get('/api/auth/me');
-      setUser(data.customer);
+      const data = await api.get('/api/user/profile');
+      setUser(data.data);
     } catch {
       logout();
     }

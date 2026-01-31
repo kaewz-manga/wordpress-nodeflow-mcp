@@ -118,7 +118,7 @@ export default function Landing() {
             </Link>
           </div>
           <p className="mt-4 text-sm text-gray-500">
-            Free tier includes 1,000 requests/month
+            Free plan includes 100 requests/month
           </p>
         </div>
       </section>

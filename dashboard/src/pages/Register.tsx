@@ -32,7 +32,7 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      await register(email, password, name);
+      await register(email, password);
       navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');

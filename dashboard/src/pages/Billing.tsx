@@ -87,14 +87,14 @@ export default function Billing() {
       // Mock data
       setData({
         subscription: {
-          tier: user?.tier || 'free',
+          tier: user?.plan || 'free',
           status: 'active',
           requestsUsed: 3421,
           requestsLimit: 10000,
           billingCycleEnd: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
           nextInvoiceAmount: 9,
         },
-        paymentMethod: user?.tier !== 'free' ? {
+        paymentMethod: user?.plan !== 'free' ? {
           brand: 'visa',
           last4: '4242',
           expMonth: 12,

@@ -99,7 +99,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {user?.name || user?.email?.split('@')[0]}</p>
+          <p className="text-gray-600">Welcome back, {user?.email?.split('@')[0]}</p>
         </div>
         <Link to="/dashboard/api-keys" className="btn btn-primary">
           <Key className="h-4 w-4 mr-2" />

@@ -14,7 +14,7 @@ import {
 
 export default function Settings() {
   const { user, refreshUser, logout } = useAuth();
-  const [name, setName] = useState(user?.name || '');
+  const [name, setName] = useState(user?.email?.split('@')[0] || '');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

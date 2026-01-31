@@ -24,14 +24,14 @@ export default function Header() {
 
         {/* Right side */}
         <div className="flex items-center ml-auto space-x-4">
-          {/* Tier badge */}
+          {/* Plan badge */}
           {user && (
             <span
               className={`px-3 py-1 text-xs font-medium rounded-full ${
-                TIER_COLORS[user.tier] || TIER_COLORS.free
+                TIER_COLORS[user.plan] || TIER_COLORS.free
               }`}
             >
-              {TIER_LABELS[user.tier] || user.tier}
+              {TIER_LABELS[user.plan] || user.plan}
             </span>
           )}
 
@@ -51,7 +51,7 @@ export default function Header() {
                 <User className="h-4 w-4 text-primary-600" />
               </div>
               <span className="hidden sm:block text-sm font-medium text-gray-700">
-                {user?.name || user?.email?.split('@')[0]}
+                {user?.email?.split('@')[0]}
               </span>
               <ChevronDown className="h-4 w-4 text-gray-500" />
             </button>
@@ -59,7 +59,7 @@ export default function Header() {
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
                 <div className="px-4 py-2 border-b border-gray-100">
-                  <p className="text-sm font-medium text-gray-900">{user?.name || 'User'}</p>
+                  <p className="text-sm font-medium text-gray-900">{user?.email?.split('@')[0] || 'User'}</p>
                   <p className="text-xs text-gray-500">{user?.email}</p>
                 </div>
                 <button
