@@ -12,7 +12,7 @@ import {
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'API Keys', href: '/dashboard/api-keys', icon: Key },
+  { name: 'Connections', href: '/dashboard/api-keys', icon: Key },
   { name: 'Usage', href: '/dashboard/usage', icon: BarChart3 },
   { name: 'Analytics', href: '/dashboard/analytics', icon: LineChart },
   { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
