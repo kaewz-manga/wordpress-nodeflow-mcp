@@ -80,30 +80,32 @@ export default function Billing() {
 
   async function loadBilling() {
     try {
-      const result = await api.get<BillingData>('/api/billing');
-      setData(result);
+      const usage = await api.get<{ data: { plan: string; requests: { used: number; limit: number }; reset_at: string } }>('/api/usage');
+      setData({
+        subscription: {
+          tier: usage.data.plan,
+          status: 'active',
+          requestsUsed: usage.data.requests.used,
+          requestsLimit: usage.data.requests.limit,
+          billingCycleEnd: usage.data.reset_at,
+          nextInvoiceAmount: 0,
+        },
+        paymentMethod: null,
+        invoices: [],
+      });
     } catch (error) {
       console.error('Failed to load billing:', error);
-      // Mock data
       setData({
         subscription: {
           tier: user?.plan || 'free',
           status: 'active',
-          requestsUsed: 3421,
-          requestsLimit: 10000,
-          billingCycleEnd: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
-          nextInvoiceAmount: 9,
+          requestsUsed: 0,
+          requestsLimit: 100,
+          billingCycleEnd: '',
+          nextInvoiceAmount: 0,
         },
-        paymentMethod: user?.plan !== 'free' ? {
-          brand: 'visa',
-          last4: '4242',
-          expMonth: 12,
-          expYear: 2027,
-        } : null,
-        invoices: [
-          { id: '1', date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), amount: 9, status: 'paid', pdfUrl: '#' },
-          { id: '2', date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(), amount: 9, status: 'paid', pdfUrl: '#' },
-        ],
+        paymentMethod: null,
+        invoices: [],
       });
     } finally {
       setIsLoading(false);
@@ -115,9 +117,9 @@ export default function Billing() {
     setIsUpgrading(true);
 
     try {
-      const result = await api.post<{ checkoutUrl: string }>('/api/billing/checkout', { tier });
+      const result = await api.post<{ data: { url: string } }>('/api/billing/checkout', { plan_id: tier });
       // Redirect to Stripe checkout
-      window.location.href = result.checkoutUrl;
+      window.location.href = result.data.url;
     } catch (error) {
       console.error('Failed to start checkout:', error);
       alert('Failed to start checkout. Please try again.');
@@ -129,8 +131,8 @@ export default function Billing() {
 
   async function handleManageBilling() {
     try {
-      const result = await api.post<{ portalUrl: string }>('/api/billing/portal');
-      window.location.href = result.portalUrl;
+      const result = await api.post<{ data: { url: string } }>('/api/billing/portal');
+      window.location.href = result.data.url;
     } catch (error) {
       console.error('Failed to open billing portal:', error);
     }

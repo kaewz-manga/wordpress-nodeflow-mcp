@@ -57,54 +57,32 @@ export default function Analytics() {
 
   async function loadAnalytics() {
     try {
-      const result = await api.get<AnalyticsData>(`/api/analytics?period=${period}`);
-      setData(result);
-    } catch (error) {
-      console.error('Failed to load analytics:', error);
-      // Mock data
+      const usage = await api.get<{ data: { requests: { used: number }; success_rate: number } }>('/api/usage');
       setData({
         summary: {
-          totalRequests: 45678,
-          requestsChange: 12.5,
-          avgResponseTime: 234,
-          responseTimeChange: -8.2,
-          errorRate: 0.5,
-          errorRateChange: -15.3,
-          uniqueTools: 18,
+          totalRequests: usage.data.requests.used,
+          requestsChange: 0,
+          avgResponseTime: 0,
+          responseTimeChange: 0,
+          errorRate: 100 - usage.data.success_rate,
+          errorRateChange: 0,
+          uniqueTools: 0,
         },
-        requestsOverTime: Array.from({ length: 30 }, (_, i) => ({
-          date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          requests: Math.floor(Math.random() * 1000) + 500,
-          errors: Math.floor(Math.random() * 20),
-        })),
-        responseTimeDistribution: [
-          { range: '0-100ms', count: 2345 },
-          { range: '100-250ms', count: 4567 },
-          { range: '250-500ms', count: 2134 },
-          { range: '500ms-1s', count: 876 },
-          { range: '>1s', count: 234 },
-        ],
-        toolUsage: [
-          { tool: 'wp_get_posts', count: 12345 },
-          { tool: 'wp_create_post', count: 8765 },
-          { tool: 'wp_upload_media', count: 5432 },
-          { tool: 'wp_update_post', count: 3210 },
-          { tool: 'wp_delete_post', count: 1234 },
-        ],
-        errorsByType: [
-          { type: 'Rate Limit', count: 156 },
-          { type: 'Auth Error', count: 89 },
-          { type: 'WordPress Error', count: 67 },
-          { type: 'Timeout', count: 45 },
-          { type: 'Other', count: 23 },
-        ],
-        geographicDistribution: [
-          { region: 'North America', requests: 15678 },
-          { region: 'Europe', requests: 12345 },
-          { region: 'Asia Pacific', requests: 8765 },
-          { region: 'South America', requests: 3456 },
-          { region: 'Other', requests: 2345 },
-        ],
+        requestsOverTime: [],
+        responseTimeDistribution: [],
+        toolUsage: [],
+        errorsByType: [],
+        geographicDistribution: [],
+      });
+    } catch (error) {
+      console.error('Failed to load analytics:', error);
+      setData({
+        summary: {
+          totalRequests: 0, requestsChange: 0, avgResponseTime: 0,
+          responseTimeChange: 0, errorRate: 0, errorRateChange: 0, uniqueTools: 0,
+        },
+        requestsOverTime: [], responseTimeDistribution: [],
+        toolUsage: [], errorsByType: [], geographicDistribution: [],
       });
     } finally {
       setIsLoading(false);

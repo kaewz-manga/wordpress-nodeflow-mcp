@@ -91,7 +91,7 @@ export default function ApiKeys() {
     }
 
     try {
-      await api.delete(`/api/keys/${id}`);
+      await api.delete(`/api/api-keys/${id}`);
       setApiKeys(apiKeys.filter((key) => key.id !== id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete API key');

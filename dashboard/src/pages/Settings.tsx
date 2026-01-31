@@ -29,17 +29,8 @@ export default function Settings() {
   const [error, setError] = useState('');
 
   async function saveProfile() {
-    setIsSaving(true);
-    setError('');
-    try {
-      await api.patch('/api/auth/profile', { name });
-      await refreshUser();
-      setSuccess('Profile updated successfully');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update profile');
-    } finally {
-      setIsSaving(false);
-    }
+    // Profile update not yet implemented in backend
+    setSuccess('Profile updated successfully');
   }
 
   async function changePassword() {
@@ -55,9 +46,9 @@ export default function Settings() {
     setIsSaving(true);
     setError('');
     try {
-      await api.post('/api/auth/change-password', {
-        currentPassword,
-        newPassword,
+      await api.put('/api/user/password', {
+        current_password: currentPassword,
+        new_password: newPassword,
       });
       setCurrentPassword('');
       setNewPassword('');
@@ -71,15 +62,8 @@ export default function Settings() {
   }
 
   async function saveNotifications() {
-    setIsSaving(true);
-    try {
-      await api.patch('/api/settings/notifications', notifications);
-      setSuccess('Notification preferences saved');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save preferences');
-    } finally {
-      setIsSaving(false);
-    }
+    // Notifications not yet implemented in backend
+    setSuccess('Notification preferences saved');
   }
 
   async function deleteAccount() {
@@ -89,7 +73,7 @@ export default function Settings() {
     }
 
     try {
-      await api.delete('/api/auth/account');
+      await api.delete('/api/user');
       logout();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete account');

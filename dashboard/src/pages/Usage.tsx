@@ -41,34 +41,23 @@ export default function Usage() {
 
   async function loadUsage() {
     try {
-      const [logsData, statsData] = await Promise.all([
-        api.get<{ logs: UsageLog[] }>('/api/usage/logs'),
-        api.get<{ stats: UsageStats }>('/api/usage/stats'),
-      ]);
-      setLogs(logsData.logs);
-      setStats(statsData.stats);
+      const usage = await api.get<{ data: { requests: { used: number; limit: number }; success_rate: number } }>('/api/usage');
+      setStats({
+        totalRequests: usage.data.requests.used,
+        successRate: usage.data.success_rate,
+        avgResponseTime: 0,
+        topTools: [],
+      });
+      setLogs([]);
     } catch (error) {
       console.error('Failed to load usage:', error);
-      // Mock data
-      setLogs([
-        { id: '1', tool: 'wp_create_post', status: 'success', responseTime: 234, apiKeyName: 'Production Key', createdAt: new Date().toISOString() },
-        { id: '2', tool: 'wp_get_posts', status: 'success', responseTime: 156, apiKeyName: 'Production Key', createdAt: new Date(Date.now() - 300000).toISOString() },
-        { id: '3', tool: 'wp_upload_media', status: 'error', responseTime: 1234, errorMessage: 'File too large', apiKeyName: 'Dev Key', createdAt: new Date(Date.now() - 600000).toISOString() },
-        { id: '4', tool: 'wp_update_page', status: 'success', responseTime: 345, apiKeyName: 'Production Key', createdAt: new Date(Date.now() - 900000).toISOString() },
-        { id: '5', tool: 'wp_delete_post', status: 'success', responseTime: 189, apiKeyName: 'Dev Key', createdAt: new Date(Date.now() - 1200000).toISOString() },
-      ]);
       setStats({
-        totalRequests: 12453,
-        successRate: 99.5,
-        avgResponseTime: 245,
-        topTools: [
-          { tool: 'wp_get_posts', count: 4521 },
-          { tool: 'wp_create_post', count: 2345 },
-          { tool: 'wp_upload_media', count: 1234 },
-          { tool: 'wp_update_post', count: 987 },
-          { tool: 'wp_get_media', count: 654 },
-        ],
+        totalRequests: 0,
+        successRate: 100,
+        avgResponseTime: 0,
+        topTools: [],
       });
+      setLogs([]);
     } finally {
       setIsLoading(false);
     }

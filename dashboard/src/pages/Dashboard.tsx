@@ -54,29 +54,32 @@ export default function Dashboard() {
 
   async function loadDashboard() {
     try {
-      const result = await api.get<DashboardData>('/api/dashboard');
-      setData(result);
-    } catch (error) {
-      console.error('Failed to load dashboard:', error);
-      // Set mock data for demo
+      const usage = await api.get<{ data: { requests: { used: number; limit: number }; success_rate: number } }>('/api/usage');
       setData({
         stats: {
-          totalRequests: 12453,
-          requestsThisMonth: 3421,
-          requestsLimit: 10000,
-          activeApiKeys: 3,
-          avgResponseTime: 245,
-          errorRate: 0.5,
+          totalRequests: usage.data.requests.used,
+          requestsThisMonth: usage.data.requests.used,
+          requestsLimit: usage.data.requests.limit,
+          activeApiKeys: 0,
+          avgResponseTime: 0,
+          errorRate: 100 - usage.data.success_rate,
         },
-        usageChart: Array.from({ length: 7 }, (_, i) => ({
-          date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { weekday: 'short' }),
-          requests: Math.floor(Math.random() * 500) + 200,
-        })),
-        recentActivity: [
-          { id: '1', tool: 'wp_create_post', status: 'success', timestamp: new Date().toISOString() },
-          { id: '2', tool: 'wp_get_posts', status: 'success', timestamp: new Date(Date.now() - 300000).toISOString() },
-          { id: '3', tool: 'wp_upload_media', status: 'error', timestamp: new Date(Date.now() - 600000).toISOString() },
-        ],
+        usageChart: [],
+        recentActivity: [],
+      });
+    } catch (error) {
+      console.error('Failed to load dashboard:', error);
+      setData({
+        stats: {
+          totalRequests: 0,
+          requestsThisMonth: 0,
+          requestsLimit: 100,
+          activeApiKeys: 0,
+          avgResponseTime: 0,
+          errorRate: 0,
+        },
+        usageChart: [],
+        recentActivity: [],
       });
     } finally {
       setIsLoading(false);
