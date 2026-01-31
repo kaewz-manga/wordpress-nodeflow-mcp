@@ -5,7 +5,6 @@ import {
   User,
   Mail,
   Lock,
-  Globe,
   Bell,
   Shield,
   Trash2,
@@ -246,45 +245,6 @@ export default function Settings() {
             {isSaving ? 'Saving...' : 'Save Preferences'}
           </button>
         </div>
-      </div>
-
-      {/* Custom Domain */}
-      <div className="card">
-        <div className="flex items-center mb-6">
-          <Globe className="h-5 w-5 text-gray-400 mr-2" />
-          <h2 className="text-lg font-semibold text-gray-900">Custom Domain</h2>
-          {user?.tier !== 'business' && user?.tier !== 'enterprise' && (
-            <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full">
-              Business+
-            </span>
-          )}
-        </div>
-
-        {user?.tier === 'business' || user?.tier === 'enterprise' ? (
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Use your own domain for API requests instead of the default endpoint.
-            </p>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Custom Domain</label>
-              <input
-                type="text"
-                className="input"
-                placeholder="api.yourdomain.com"
-              />
-            </div>
-            <p className="text-xs text-gray-500">
-              Add a CNAME record pointing to <code className="bg-gray-100 px-1 rounded">api.wordpress-mcp.com</code>
-            </p>
-            <button className="btn btn-primary">Save Domain</button>
-          </div>
-        ) : (
-          <div className="text-center py-6">
-            <Globe className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 mb-4">Custom domains are available on Business plans and above.</p>
-            <button className="btn btn-primary">Upgrade Plan</button>
-          </div>
-        )}
       </div>
 
       {/* Security */}

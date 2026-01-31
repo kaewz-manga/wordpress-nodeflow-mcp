@@ -4,7 +4,6 @@ import {
   Key,
   BarChart3,
   LineChart,
-  Users,
   CreditCard,
   Settings,
   BookOpen,
@@ -16,7 +15,6 @@ const navigation = [
   { name: 'API Keys', href: '/dashboard/api-keys', icon: Key },
   { name: 'Usage', href: '/dashboard/usage', icon: BarChart3 },
   { name: 'Analytics', href: '/dashboard/analytics', icon: LineChart },
-  { name: 'Team', href: '/dashboard/team', icon: Users },
   { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];

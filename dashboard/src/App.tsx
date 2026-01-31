@@ -8,7 +8,6 @@ import Dashboard from './pages/Dashboard';
 import ApiKeys from './pages/ApiKeys';
 import Usage from './pages/Usage';
 import Analytics from './pages/Analytics';
-import Team from './pages/Team';
 import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 import Docs from './pages/Docs';
@@ -54,7 +53,6 @@ function App() {
           <Route path="api-keys" element={<ApiKeys />} />
           <Route path="usage" element={<Usage />} />
           <Route path="analytics" element={<Analytics />} />
-          <Route path="team" element={<Team />} />
           <Route path="billing" element={<Billing />} />
           <Route path="settings" element={<Settings />} />
         </Route>
