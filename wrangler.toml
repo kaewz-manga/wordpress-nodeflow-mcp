@@ -17,7 +17,7 @@ database_id = "local-dev-db"  # Replace with actual ID after `wrangler d1 create
 # =============================================================================
 # Create with: wrangler kv:namespace create "RATE_LIMIT"
 [[kv_namespaces]]
-binding = "RATE_LIMIT"
+binding = "RATE_LIMIT_KV"
 id = "local-dev-kv"  # Replace with actual ID after `wrangler kv:namespace create`
 
 # =============================================================================
@@ -25,16 +25,7 @@ id = "local-dev-kv"  # Replace with actual ID after `wrangler kv:namespace creat
 # =============================================================================
 [vars]
 ALLOWED_ORIGINS = "*"
-# Subscription tier limits (requests per month)
-TIER_FREE_LIMIT = "1000"
-TIER_STARTER_LIMIT = "10000"
-TIER_PRO_LIMIT = "50000"
-TIER_BUSINESS_LIMIT = "200000"
-# Rate limits (requests per minute)
-TIER_FREE_RATE = "10"
-TIER_STARTER_RATE = "30"
-TIER_PRO_RATE = "100"
-TIER_BUSINESS_RATE = "300"
+ENVIRONMENT = "development"
 
 # =============================================================================
 # Production Environment
@@ -49,7 +40,7 @@ database_name = "wordpress-mcp-db"
 database_id = "your-production-db-id"  # Replace after `wrangler d1 create`
 
 [[env.production.kv_namespaces]]
-binding = "RATE_LIMIT"
+binding = "RATE_LIMIT_KV"
 id = "your-production-kv-id"  # Replace after `wrangler kv:namespace create`
 
 # =============================================================================

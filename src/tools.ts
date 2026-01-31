@@ -2,15 +2,7 @@
  * MCP Tool Definitions for WordPress REST API
  */
 
-export interface MCPTool {
-  name: string;
-  description: string;
-  inputSchema: {
-    type: string;
-    properties: Record<string, any>;
-    required?: string[];
-  };
-}
+import { MCPTool } from './types';
 
 /**
  * Posts Tools (5)
