@@ -29,8 +29,8 @@ const features = [
   },
   {
     icon: Shield,
-    title: 'Enterprise Security',
-    description: 'SOC2 compliant with SSO, audit logs, and encryption',
+    title: 'Secure by Default',
+    description: 'AES-GCM encryption, API key auth, and SSRF protection',
   },
   {
     icon: Globe,
@@ -48,31 +48,27 @@ const tiers = [
   {
     name: 'Free',
     price: 0,
-    requests: '1,000',
-    rateLimit: '10 req/min',
-    features: ['1 API key', 'Basic analytics', 'Community support'],
+    requests: '100',
+    features: ['1 connection', 'Community support'],
   },
   {
     name: 'Starter',
-    price: 9,
-    requests: '10,000',
-    rateLimit: '30 req/min',
-    features: ['5 API keys', 'Advanced analytics', 'Email support', 'Webhooks'],
+    price: 9.99,
+    requests: '1,000',
+    features: ['3 connections', 'Email support', 'Analytics'],
     popular: true,
   },
   {
     name: 'Pro',
-    price: 29,
-    requests: '50,000',
-    rateLimit: '100 req/min',
-    features: ['Unlimited API keys', 'Team management', 'Priority support', 'SLA reports'],
+    price: 29.99,
+    requests: '10,000',
+    features: ['10 connections', 'Priority support', 'Analytics'],
   },
   {
-    name: 'Business',
-    price: 99,
-    requests: '200,000',
-    rateLimit: '300 req/min',
-    features: ['Everything in Pro', 'Dedicated support', 'Custom domains', 'Audit logs'],
+    name: 'Enterprise',
+    price: 99.99,
+    requests: '100,000',
+    features: ['Unlimited connections', 'Dedicated support', 'SLA'],
   },
 ];
 
@@ -176,11 +172,10 @@ export default function Landing() {
                   </span>
                   <span className="text-gray-500">/month</span>
                 </div>
-                <div className="space-y-2 mb-6 text-sm">
+                <div className="mb-6 text-sm">
                   <p className="text-gray-600">
                     <strong>{tier.requests}</strong> requests/month
                   </p>
-                  <p className="text-gray-600">{tier.rateLimit}</p>
                 </div>
                 <ul className="space-y-2 mb-6">
                   {tier.features.map((feature) => (

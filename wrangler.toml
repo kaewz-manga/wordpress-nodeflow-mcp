@@ -81,9 +81,9 @@ name = "wordpress-nodeflow-mcp-dev"
 # 1. Create account: https://dashboard.stripe.com/register
 # 2. Get API keys: https://dashboard.stripe.com/apikeys
 # 3. Create products and prices for each tier:
-#    - Starter: $9/month
-#    - Pro: $29/month
-#    - Business: $99/month
+#    - Starter: $9.99/month
+#    - Pro: $29.99/month
+#    - Enterprise: $99.99/month
 # 4. Create webhook endpoint: https://dashboard.stripe.com/webhooks
 #    - URL: https://your-worker.workers.dev/webhooks/stripe
 #    - Events to listen:
@@ -93,7 +93,7 @@ name = "wordpress-nodeflow-mcp-dev"
 #      - customer.subscription.deleted
 #      - invoice.paid
 #      - invoice.payment_failed
-# 5. Update STRIPE_PRICE_IDS in src/billing/types.ts with your actual Price IDs
+# 5. Set STRIPE_PRICE_STARTER, STRIPE_PRICE_PRO, STRIPE_PRICE_ENTERPRISE secrets
 #
 # Commands to set secrets:
 # wrangler secret put STRIPE_SECRET_KEY

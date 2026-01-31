@@ -70,8 +70,8 @@ You can now use WordPress tools in your AI conversations:
 ## Next Steps
 
 - [View all available tools](#tools)
-- [Set up webhooks for notifications](#webhooks)
-- [Configure team access](#team)
+- [Manage your API keys](#api-keys)
+- [View usage analytics](#usage)
         `,
       },
       {
@@ -112,10 +112,10 @@ curl -X POST https://api.wordpress-mcp.com/mcp \\
 
 | Tier | Rate Limit |
 |------|------------|
-| Free | 10 req/min |
-| Starter | 30 req/min |
-| Pro | 100 req/min |
-| Business | 300 req/min |
+| Free | 100 req/mo |
+| Starter | 1,000 req/mo |
+| Pro | 10,000 req/mo |
+| Enterprise | 100,000 req/mo |
         `,
       },
     ],

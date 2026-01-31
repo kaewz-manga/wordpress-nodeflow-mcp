@@ -316,10 +316,10 @@ export default function Billing() {
               Need unlimited requests, custom SLA, or dedicated support? Contact us for enterprise pricing.
             </p>
             <ul className="flex flex-wrap gap-4 text-sm text-gray-300">
-              <li className="flex items-center"><Check className="h-4 w-4 text-green-400 mr-1" /> Unlimited requests</li>
-              <li className="flex items-center"><Check className="h-4 w-4 text-green-400 mr-1" /> 99.99% SLA</li>
-              <li className="flex items-center"><Check className="h-4 w-4 text-green-400 mr-1" /> SSO/SAML</li>
+              <li className="flex items-center"><Check className="h-4 w-4 text-green-400 mr-1" /> 100,000 requests/mo</li>
+              <li className="flex items-center"><Check className="h-4 w-4 text-green-400 mr-1" /> Unlimited connections</li>
               <li className="flex items-center"><Check className="h-4 w-4 text-green-400 mr-1" /> Dedicated support</li>
+              <li className="flex items-center"><Check className="h-4 w-4 text-green-400 mr-1" /> SLA guarantee</li>
             </ul>
           </div>
           <button className="btn bg-white text-gray-900 hover:bg-gray-100">
