@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "wrangler dev --local --port 8789",
     "deploy": "wrangler deploy",
-    "test": "vitest",
+    "test": "vitest run",
     "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --coverage",
     "type-check": "tsc --noEmit"
   },
   "keywords": [
@@ -21,9 +22,9 @@
   "license": "MIT",
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241127.0",
+    "@vitest/coverage-v8": "^2.1.9",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8",
     "wrangler": "^3.94.0"
-  },
-  "dependencies": {}
+  }
 }
