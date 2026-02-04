@@ -22,7 +22,7 @@ Location: `migrations/`
 |-------|---------|
 | `users` | User accounts |
 | `wordpress_connections` | WordPress site connections |
-| `api_keys` | SaaS API keys (wp_xxx) |
+| `api_keys` | SaaS API keys (n2f_xxx) |
 | `usage_logs` | Per-request usage logs |
 | `usage_monthly` | Aggregated monthly usage |
 | `plans` | Subscription plans |

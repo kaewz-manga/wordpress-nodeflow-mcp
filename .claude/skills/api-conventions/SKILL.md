@@ -15,7 +15,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### API Key (MCP Clients)
 ```
-Authorization: Bearer wp_xxxxxxxxxxxxx
+Authorization: Bearer n2f_xxxxxxxxxxxxx
 ```
 
 ### WordPress Credentials (Multi-tenant)
