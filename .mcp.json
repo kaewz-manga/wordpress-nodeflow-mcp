@@ -1,0 +1,58 @@
+{
+  "mcpServers": {
+    "n8n-mcp": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "n8n-mcp"],
+      "env": {
+        "MCP_MODE": "stdio",
+        "LOG_LEVEL": "info",
+        "DISABLE_CONSOLE_OUTPUT": "true",
+        "N8N_MCP_DISABLE_BANNER": "true",
+        "N8N_API_URL": "https://n8n-no1.missmanga.org",
+        "N8N_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxYmU1ZjIwNC1hMDU1LTRiNDItODIxOC04MWFjYjA4ZDViZjIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzY0MzU2MTkzfQ.tgll_DrpXID4PTfDDa0D1fcdxaj4jY93rbRes9yI0CY"
+      }
+    },
+    "memory": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-memory"],
+      "env": {
+          "MEMORY_FILE_PATH": "D:\\Dev\\playground\\Claude_Code_Commander\\wordpress-nodeflow-mcp\\.memory\\infrastructure.jsonl"
+      }
+    },
+    "n8n-mcp-remote": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "mcp-remote",
+        "https://n8n-mcp-remote.missmanga.org/mcp",
+        "--header",
+        "Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxYmU1ZjIwNC1hMDU1LTRiNDItODIxOC04MWFjYjA4ZDViZjIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzY0MzU2MTkzfQ.tgll_DrpXID4PTfDDa0D1fcdxaj4jY93rbRes9yI0CY"
+      ]
+    },
+    "n8n-multi-tenant-no1": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "D:\\Dev\\playground\\Claude_Code_Commander\\n8n-mcp-workers\\stdio-server.js",
+        "https://n8n-no1.missmanga.org",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxYmU1ZjIwNC1hMDU1LTRiNDItODIxOC04MWFjYjA4ZDViZjIiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzY0MzU2MTkzfQ.tgll_DrpXID4PTfDDa0D1fcdxaj4jY93rbRes9yI0CY"
+      ]
+    },
+    "n8n-mcp-instance": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "supergateway",
+        "--streamableHttp",
+        "https://n8n-no1.missmanga.org/mcp-server/http",
+        "--header",
+        "authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxYmU1ZjIwNC1hMDU1LTRiNDItODIxOC04MWFjYjA4ZDViZjIiLCJpc3MiOiJuOG4iLCJhdWQiOiJtY3Atc2VydmVyLWFwaSIsImp0aSI6ImNmMWE2MDFlLTIyMDctNDgxNC04MjU0LTcwMzkzZGY4YzIwYyIsImlhdCI6MTc2OTY5NjAxM30.EMBVkwTT9Yd2efgsF6eLgwX5ObwuYP8FUsUv7JDXFhs"
+      ]
+    }
+  }
+}

@@ -1,25 +1,44 @@
-# CLAUDE.md - wordpress-nodeflow-mcp Technical Guide
+# wordpress-nodeflow-mcp
 
-> Technical reference for AI assistants working with wordpress-nodeflow-mcp
+> Cloudflare Worker MCP SaaS Platform for WordPress REST API.
+
+**Source Repo**: https://github.com/kaewz-manga/wordpress-nodeflow-mcp
+
+---
+
+## Quick Links
+
+| Area | Guide | Key Info |
+|------|-------|----------|
+| **Worker Code** | [`src/CLAUDE.md`](src/CLAUDE.md) | Routes, auth, D1, WordPress client |
+| **Dashboard** | [`dashboard/CLAUDE.md`](dashboard/CLAUDE.md) | React, theme, routes |
+| **React Patterns** | [`dashboard/src/CLAUDE.md`](dashboard/src/CLAUDE.md) | Components, hooks |
+| **Pages** | [`dashboard/src/pages/CLAUDE.md`](dashboard/src/pages/CLAUDE.md) | Page patterns |
+| **Components** | [`dashboard/src/components/CLAUDE.md`](dashboard/src/components/CLAUDE.md) | UI components |
+| **Contexts** | [`dashboard/src/contexts/CLAUDE.md`](dashboard/src/contexts/CLAUDE.md) | Auth, Sudo, Connection |
+| **Migrations** | [`migrations/CLAUDE.md`](migrations/CLAUDE.md) | D1 schema |
+| **Tests** | [`tests/CLAUDE.md`](tests/CLAUDE.md) | Vitest patterns |
 
 ---
 
 ## Project Overview
 
-**Type**: Cloudflare Workers MCP Server for WordPress REST API
+**Type**: Cloudflare Workers MCP SaaS Platform for WordPress REST API
 
-**Purpose**: Serverless MCP server that wraps WordPress REST API as MCP tools
+**Purpose**: Multi-tenant MCP server that wraps WordPress REST API as MCP tools with user management, billing, and dashboard.
 
 **Key Features**:
 - 13 WordPress tools (posts, pages, media)
 - Multi-tenant support (headers + environment)
-- JSON-RPC 2.0 over HTTP
-- Zero memory leaks (stateless Workers)
-- Auto-scaling (100K requests/day free)
+- User registration, login, OAuth (GitHub/Google)
+- TOTP 2FA for protected actions
+- Stripe billing integration
+- Dashboard for management
+- D1 database + KV for rate limiting
 
 **Deployment**:
-- Platform: Cloudflare Workers
-- URL: `https://wordpress-mcp.nodeflow.workers.dev/mcp`
+- Worker: `https://wordpress-mcp.nodeflow.workers.dev`
+- Dashboard: `https://wordpress-mcp-dashboard.nodeflow.workers.dev`
 - Protocol: MCP (JSON-RPC 2.0 over HTTP)
 
 ---

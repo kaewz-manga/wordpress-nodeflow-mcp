@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__memory__read_graph",
+      "mcp__memory__create_entities",
+      "mcp__memory__create_relations",
+      "Bash(npm run *)",
+      "Bash(npm test *)",
+      "Bash(wrangler *)",
+      "Bash(curl *)"
+    ],
+    "deny": []
+  }
+}
