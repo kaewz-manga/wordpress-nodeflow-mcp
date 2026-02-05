@@ -15,14 +15,16 @@ Refactored from deep nested modules (58 files, ~13,800 lines) to flat SaaS struc
 
 ## Production Deployment ✅
 
-**URL**: `https://wordpress-nodeflow-mcp.suphakitm99.workers.dev`
+**Worker URL**: `https://wordpress-nodeflow-mcp.suphakitm99.workers.dev`
+**Dashboard URL**: `https://wordpress-mcp-dashboard.pages.dev`
 
 ### Cloudflare Resources
 
-| Resource | ID |
+| Resource | ID / URL |
 |----------|-----|
 | D1 Database | `654eed68-9519-4179-bc53-6c10da500a41` |
 | KV Namespace | `767e51e45f5341cca170bd867f4c9118` |
+| Pages Project | `wordpress-mcp-dashboard` |
 
 ### Secrets Set
 
@@ -272,9 +274,9 @@ These dashboard features have no backend support yet (pages show empty state):
 3. ~~Test locally~~ ✅ Done
 4. ~~Verify 24 MCP tools~~ ✅ Done
 5. ~~Rework ApiKeys page~~ ✅ Done
-6. ~~Deploy to production~~ ✅ Done
-7. Add missing backend endpoints (Analytics, Usage logs, etc.)
-8. Deploy Dashboard to Cloudflare Pages
+6. ~~Deploy Worker to production~~ ✅ Done
+7. ~~Deploy Dashboard to Cloudflare Pages~~ ✅ Done
+8. Add missing backend endpoints (Analytics, Usage logs, etc.)
 9. Set up Stripe billing (optional)
 10. Set up OAuth providers (optional)
 
