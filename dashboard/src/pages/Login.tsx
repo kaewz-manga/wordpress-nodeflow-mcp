@@ -25,6 +25,18 @@ export default function Login() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      const redirectUri = `${window.location.origin}/auth/callback`;
+      const response = await api.get<{ success: boolean; data?: { url: string } }>(`/api/auth/oauth/google?redirect_uri=${encodeURIComponent(redirectUri)}`);
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (err) {
+      setError('Failed to start Google login');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -147,6 +159,7 @@ export default function Login() {
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button
                 type="button"
+                onClick={handleGoogleLogin}
                 className="btn btn-secondary flex items-center justify-center"
               >
                 <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
