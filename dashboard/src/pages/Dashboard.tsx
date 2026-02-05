@@ -6,7 +6,6 @@ import { formatNumber, formatPercentage } from '../utils/format';
 import {
   Activity,
   Key,
-  TrendingUp,
   AlertTriangle,
   ArrowUpRight,
   Clock,

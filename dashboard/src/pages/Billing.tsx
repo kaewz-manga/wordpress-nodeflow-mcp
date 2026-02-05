@@ -68,7 +68,7 @@ const plans = [
 ];
 
 export default function Billing() {
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
   const [data, setData] = useState<BillingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);

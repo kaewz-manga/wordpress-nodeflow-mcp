@@ -3,7 +3,6 @@ import { api } from '../utils/api';
 import { formatNumber, formatMs, formatDateTime } from '../utils/format';
 import {
   Activity,
-  Filter,
   Download,
   Search,
   CheckCircle,

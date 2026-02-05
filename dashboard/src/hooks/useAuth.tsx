@@ -8,6 +8,19 @@ interface User {
   is_admin: number;
 }
 
+interface ProfileResponse {
+  success: boolean;
+  data: User;
+}
+
+interface LoginResponse {
+  success: boolean;
+  data: {
+    token: string;
+    user: User;
+  };
+}
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -36,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const data = await api.get('/api/user/profile');
+      const data = await api.get<ProfileResponse>('/api/user/profile');
       setUser(data.data);
     } catch {
       localStorage.removeItem('token');
@@ -46,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function login(email: string, password: string) {
-    const data = await api.post('/api/auth/login', { email, password });
+    const data = await api.post<LoginResponse>('/api/auth/login', { email, password });
     localStorage.setItem('token', data.data.token);
     setUser(data.data.user);
   }
@@ -64,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function refreshUser() {
     try {
-      const data = await api.get('/api/user/profile');
+      const data = await api.get<ProfileResponse>('/api/user/profile');
       setUser(data.data);
     } catch {
       logout();

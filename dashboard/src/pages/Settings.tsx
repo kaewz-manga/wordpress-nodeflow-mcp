@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 export default function Settings() {
-  const { user, refreshUser, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [name, setName] = useState(user?.email?.split('@')[0] || '');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');

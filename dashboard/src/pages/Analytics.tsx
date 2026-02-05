@@ -10,8 +10,6 @@ import {
   Globe,
 } from 'lucide-react';
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
   BarChart,

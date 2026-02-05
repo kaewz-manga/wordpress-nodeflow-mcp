@@ -2,16 +2,12 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Zap,
-  BookOpen,
   Code,
-  Key,
-  Settings,
   Terminal,
   Copy,
   Check,
   ChevronRight,
   Search,
-  ArrowLeft,
 } from 'lucide-react';
 
 const docs = [
