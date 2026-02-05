@@ -2,7 +2,7 @@
 
 **Date**: 2026-02-05
 **Branch**: `main`
-**Commit**: `0371d4d` (production deployment)
+**Commit**: `9548f59` (GitHub OAuth working)
 **Template**: `n8n-management-mcp` (same parent directory)
 
 ---
@@ -30,6 +30,8 @@ Refactored from deep nested modules (58 files, ~13,800 lines) to flat SaaS struc
 
 - `JWT_SECRET` ✅
 - `ENCRYPTION_KEY` ✅
+- `GITHUB_CLIENT_ID` ✅
+- `GITHUB_CLIENT_SECRET` ✅
 
 ### Verified Endpoints
 
@@ -38,9 +40,43 @@ Refactored from deep nested modules (58 files, ~13,800 lines) to flat SaaS struc
 | `GET /` | ✅ Server status |
 | `POST /api/auth/register` | ✅ User creation |
 | `POST /api/auth/login` | ✅ JWT token |
+| `GET /api/auth/oauth/github` | ✅ GitHub OAuth |
 | `POST /api/connections` | ✅ API key `n2f_xxx` |
+| `GET /api/analytics` | ✅ User analytics |
+| `GET /api/usage/logs` | ✅ Usage logs |
 | `POST /mcp` tools/list | ✅ 24 tools |
 | `POST /mcp` wp_get_posts | ✅ Real WordPress data |
+
+---
+
+## GitHub OAuth Setup ✅
+
+### Configuration
+
+**GitHub OAuth App Settings**:
+- Application name: `WordPress MCP Dashboard`
+- Homepage URL: `https://wordpress-mcp-dashboard.pages.dev`
+- Authorization callback URL: `https://wordpress-nodeflow-mcp.suphakitm99.workers.dev/api/auth/oauth/github/callback`
+
+### OAuth Flow
+
+```
+1. User clicks "GitHub" on login page
+2. Dashboard calls: GET /api/auth/oauth/github?redirect_uri=https://dashboard/auth/callback
+3. Worker returns GitHub authorize URL (with worker callback as redirect_uri)
+4. User authenticates on GitHub
+5. GitHub redirects to: /api/auth/oauth/github/callback?code=xxx&state=xxx
+6. Worker exchanges code for token, creates/finds user
+7. Worker redirects to: https://dashboard/auth/callback?token=xxx
+8. Dashboard saves token, redirects to /dashboard
+```
+
+### Key Files
+
+- `src/index.ts` - OAuth initiate + callback handlers
+- `src/oauth.ts` - GitHub/Google OAuth helpers
+- `dashboard/src/pages/Login.tsx` - GitHub login button
+- `dashboard/src/pages/AuthCallback.tsx` - Token handler
 
 ---
 
@@ -48,9 +84,9 @@ Refactored from deep nested modules (58 files, ~13,800 lines) to flat SaaS struc
 
 ```
 src/
-├── index.ts          (995 lines)  - Main router, API routes, MCP handler
+├── index.ts          (1050 lines) - Main router, API routes, MCP handler
 ├── tools.ts          (614 lines)  - 24 MCP tool definitions
-├── db.ts             (567 lines)  - All D1 database operations
+├── db.ts             (720 lines)  - All D1 database operations
 ├── auth.ts           (563 lines)  - Register, login, API key auth, connections
 ├── wp-client.ts      (525 lines)  - WordPress REST API + ImgBB client
 ├── saas-types.ts     (417 lines)  - All TypeScript interfaces
@@ -58,6 +94,14 @@ src/
 ├── crypto-utils.ts   (306 lines)  - PBKDF2, AES-GCM, JWT, API keys
 ├── stripe.ts         (286 lines)  - Checkout, portal, webhooks
 └── types.ts          (20 lines)   - Base MCP types
+
+dashboard/src/
+├── pages/
+│   ├── Login.tsx           - Email + GitHub OAuth login
+│   ├── AuthCallback.tsx    - OAuth callback handler
+│   └── ...
+└── hooks/
+    └── useAuth.tsx         - Auth context with setUser
 
 schema.sql            (150 lines)  - D1 database schema (7 tables)
 wrangler.toml                      - D1 + KV bindings
@@ -142,7 +186,7 @@ Template has `ai_connections` and `bot_connections`. Not carried over (n8n-speci
 
 | Table | Purpose |
 |---|---|
-| `users` | Email/password or OAuth users with plan + admin flag |
+| `users` | Email/password or OAuth users with plan + admin flag + name |
 | `wp_connections` | Encrypted WordPress credentials per user |
 | `api_keys` | SaaS API keys (hashed, linked to connection) |
 | `usage_logs` | Per-request logging (tool, status, response time) |
@@ -209,9 +253,10 @@ Default plans:
 
 ## Config
 
-### wrangler.toml Changes
-- KV binding: `RATE_LIMIT` -> `RATE_LIMIT_KV` (matching Env type)
-- Removed old tier limit vars (now in `plans` table)
+### wrangler.toml
+- `workers_dev = true` - Enable workers.dev subdomain
+- KV binding: `RATE_LIMIT_KV`
+- D1 binding: `DB`
 
 ### Secrets (wrangler secret put)
 
@@ -219,57 +264,33 @@ Default plans:
 |---|---|---|
 | `JWT_SECRET` | Yes | JWT signing |
 | `ENCRYPTION_KEY` | Yes | AES-GCM credential encryption |
+| `GITHUB_CLIENT_ID` | For OAuth | GitHub OAuth |
+| `GITHUB_CLIENT_SECRET` | For OAuth | GitHub OAuth |
+| `GOOGLE_CLIENT_ID` | For OAuth | Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | For OAuth | Google OAuth |
 | `WORDPRESS_URL` | No | Default WP URL (single-tenant) |
 | `WORDPRESS_USERNAME` | No | Default WP username |
 | `WORDPRESS_APP_PASSWORD` | No | Default WP app password |
 | `IMGBB_API_KEY` | No | ImgBB image hosting |
-| `GITHUB_CLIENT_ID` | No | GitHub OAuth |
-| `GITHUB_CLIENT_SECRET` | No | GitHub OAuth |
-| `GOOGLE_CLIENT_ID` | No | Google OAuth |
-| `GOOGLE_CLIENT_SECRET` | No | Google OAuth |
 | `STRIPE_SECRET_KEY` | No | Stripe billing |
 | `STRIPE_WEBHOOK_SECRET` | No | Stripe webhook |
-| `STRIPE_PRICE_STARTER` | No | Stripe price ID |
-| `STRIPE_PRICE_PRO` | No | Stripe price ID |
-| `STRIPE_PRICE_ENTERPRISE` | No | Stripe price ID |
+
+**Important**: Secrets must be set via `wrangler secret put`, NOT via Cloudflare Dashboard (dashboard secrets don't sync with wrangler deployments).
 
 ---
 
-## Completed Cleanup
+## Completed
 
-- [x] Removed enterprise pages (Team) from dashboard
-- [x] Removed business tier, aligned all pricing to schema.sql (free/starter/pro/enterprise)
-- [x] Replaced 6 old migrations with single clean migration matching schema.sql
-- [x] Deleted `src-old/` backup directory
-- [x] Fixed all dashboard API endpoints to match backend routes
-- [x] Fixed useAuth to use correct response shape and endpoints
-- [x] Added `api.put()` method to dashboard API utility
-
----
-
-## Known Gaps
-
-### ~~ApiKeys Page Architecture Mismatch~~ ✅ FIXED
-
-~~Dashboard treats API keys as standalone (`/api/keys`), but backend requires connection-based flow.~~
-
-**Fixed in commit `1e08246`**: ApiKeys page now uses connection-based architecture:
-- `GET /api/connections` → Returns connections with nested api_keys[]
-- `POST /api/connections` → Creates connection + first API key
-- `POST /api/connections/:id/api-keys` → Creates new API key
-- `DELETE /api/api-keys/:id` → Revokes API key
-- `DELETE /api/connections/:id` → Deletes connection
-
-### ~~Missing Backend Endpoints~~ ✅ MOSTLY FIXED
-
-Added in latest update:
-- ✅ `GET /api/analytics` - Request volume, response time distribution, tool usage, errors by type
-- ✅ `GET /api/usage/logs` - Detailed per-request log entries with pagination
-- ✅ `PUT /api/user/profile` - Update user name
-- ✅ `GET /api/user/profile` - Now includes name field
-
-Still missing:
-- Notification preferences (save/load) - Dashboard page needs backend
+- [x] Refactored to flat SaaS structure
+- [x] Deployed Worker to production
+- [x] Deployed Dashboard to Cloudflare Pages
+- [x] Set up D1 database with schema
+- [x] API key prefix standardized to `n2f_`
+- [x] Added analytics and usage logs endpoints
+- [x] Added user profile name field
+- [x] **GitHub OAuth working** ✅
+- [x] Dashboard GitHub login button
+- [x] AuthCallback page for OAuth token handling
 
 ---
 
@@ -282,9 +303,11 @@ Still missing:
 5. ~~Rework ApiKeys page~~ ✅ Done
 6. ~~Deploy Worker to production~~ ✅ Done
 7. ~~Deploy Dashboard to Cloudflare Pages~~ ✅ Done
-8. ~~Add missing backend endpoints (Analytics, Usage logs, etc.)~~ ✅ Done
-9. Set up Stripe billing (optional)
-10. Set up OAuth providers (optional)
+8. ~~Add missing backend endpoints~~ ✅ Done
+9. ~~Set up GitHub OAuth~~ ✅ Done
+10. Set up Google OAuth (optional)
+11. Set up Stripe billing (optional)
+12. Add notification preferences endpoint (optional)
 
 ---
 
@@ -295,3 +318,5 @@ Still missing:
 - **ENCRYPTION_KEY**: Never change after first use - breaks all stored credentials.
 - **TypeScript**: Strict mode enabled, `npx tsc --noEmit` must pass clean.
 - **SSRF Protection**: `wp-client.ts` blocks requests to localhost, private IPs, and cloud metadata endpoints.
+- **OAuth Secrets**: Must use `wrangler secret put`, NOT Cloudflare Dashboard.
+- **GitHub OAuth Callback**: Must point to Worker (`/api/auth/oauth/github/callback`), NOT Dashboard.
