@@ -26,6 +26,9 @@ id = "local-dev-kv"  # Replace with actual ID after `wrangler kv:namespace creat
 [vars]
 ALLOWED_ORIGINS = "*"
 ENVIRONMENT = "development"
+# Dev secrets (use wrangler secret put for production)
+JWT_SECRET = "local-dev-jwt-secret-must-be-at-least-32-characters-long"
+ENCRYPTION_KEY = "local-dev-encryption-key-32chars!"
 
 # =============================================================================
 # Production Environment
