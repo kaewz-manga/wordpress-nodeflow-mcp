@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS api_keys (
     user_id TEXT NOT NULL,
     connection_id TEXT NOT NULL,
     key_hash TEXT NOT NULL,
-    key_prefix TEXT NOT NULL,  -- First 12 chars for display (e.g., "saas_abc...")
+    key_prefix TEXT NOT NULL,  -- First 12 chars for display (e.g., "n2f_abc...")
     name TEXT DEFAULT 'Default',
     status TEXT DEFAULT 'active',  -- active, revoked
     last_used_at TEXT,

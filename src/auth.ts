@@ -228,7 +228,7 @@ export async function authenticateMcpRequest(
   const apiKey = match[1];
 
   // Validate API key format
-  if (!apiKey.startsWith('saas_')) {
+  if (!apiKey.startsWith('n2f_')) {
     return {
       context: null,
       error: {
@@ -530,8 +530,8 @@ export async function verifyAuthToken(
 
   const token = match[1];
 
-  // Skip if it's an API key (starts with saas_)
-  if (token.startsWith('saas_')) return null;
+  // Skip if it's an API key (starts with n2f_)
+  if (token.startsWith('n2f_')) return null;
 
   const payload = await verifyJWT(token, jwtSecret);
   if (!payload) return null;

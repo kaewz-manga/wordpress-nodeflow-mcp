@@ -80,9 +80,9 @@ describe('JWT', () => {
 });
 
 describe('API Key', () => {
-  it('should generate key with saas_ prefix', async () => {
+  it('should generate key with n2f_ prefix', async () => {
     const { key, hash, prefix } = await generateApiKey();
-    expect(key).toMatch(/^saas_/);
+    expect(key).toMatch(/^n2f_/);
     expect(prefix).toBe(key.substring(0, 12));
   });
 
@@ -92,7 +92,7 @@ describe('API Key', () => {
   });
 
   it('should hash same key consistently', async () => {
-    const testKey = 'saas_test-key-12345';
+    const testKey = 'n2f_test-key-12345';
     const hash1 = await hashApiKey(testKey);
     const hash2 = await hashApiKey(testKey);
     expect(hash1).toBe(hash2);

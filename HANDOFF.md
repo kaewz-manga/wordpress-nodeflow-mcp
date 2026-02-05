@@ -1,8 +1,8 @@
 # Handoff: wordpress-nodeflow-mcp
 
-**Date**: 2026-01-31
-**Branch**: `claude/code-review-bbJuJ`
-**Commit**: `6257867`
+**Date**: 2026-02-05
+**Branch**: `main`
+**Commit**: Latest (`0d311a6` + prefix fix)
 **Template**: `n8n-management-mcp` (same parent directory)
 
 ---
@@ -169,7 +169,7 @@ Default plans:
 - `GET /api/admin/health/error-trend` - Error trend
 
 ### MCP (API key)
-- `POST /mcp` - JSON-RPC 2.0 (Bearer saas_xxx)
+- `POST /mcp` - JSON-RPC 2.0 (Bearer n2f_xxx)
 
 ---
 
@@ -215,14 +215,16 @@ Default plans:
 
 ## Known Gaps
 
-### ApiKeys Page Architecture Mismatch
+### ~~ApiKeys Page Architecture Mismatch~~ ✅ FIXED
 
-Dashboard treats API keys as standalone (`/api/keys`), but backend requires:
-1. Create connection first: `POST /api/connections`
-2. Generate API key per connection: `POST /api/connections/:id/api-keys`
-3. Delete API key: `DELETE /api/api-keys/:id` (this one works)
+~~Dashboard treats API keys as standalone (`/api/keys`), but backend requires connection-based flow.~~
 
-The ApiKeys page needs rework to support the connection-based flow.
+**Fixed in commit `1e08246`**: ApiKeys page now uses connection-based architecture:
+- `GET /api/connections` → Returns connections with nested api_keys[]
+- `POST /api/connections` → Creates connection + first API key
+- `POST /api/connections/:id/api-keys` → Creates new API key
+- `DELETE /api/api-keys/:id` → Revokes API key
+- `DELETE /api/connections/:id` → Deletes connection
 
 ### Missing Backend Endpoints
 
@@ -240,12 +242,14 @@ These dashboard features have no backend support yet (pages show empty state):
 2. `wrangler secret put JWT_SECRET` + `ENCRYPTION_KEY` - Set required secrets
 3. `npx wrangler dev` -> `curl http://localhost:8787/` - Test locally
 4. Send `tools/list` to `/mcp` - Verify 24 tools
-5. Rework ApiKeys page to support connection-based API key flow
+5. ~~Rework ApiKeys page to support connection-based API key flow~~ ✅ Done
+6. Add missing backend endpoints (Analytics, Usage logs, etc.)
 
 ---
 
 ## Critical Notes
 
+- **API Key Prefix**: Changed from `saas_` to `n2f_` (Node2Flow brand). All new keys will be `n2f_xxx`.
 - **Application Password**: WordPress shows with spaces, must remove before use. `wp-client.ts` handles this automatically.
 - **ENCRYPTION_KEY**: Never change after first use - breaks all stored credentials.
 - **TypeScript**: Strict mode enabled, `npx tsc --noEmit` must pass clean.
