@@ -2,7 +2,7 @@
 
 **Date**: 2026-02-05
 **Branch**: `main`
-**Commit**: Latest (`0d311a6` + prefix fix)
+**Commit**: `0371d4d` (production deployment)
 **Template**: `n8n-management-mcp` (same parent directory)
 
 ---
@@ -10,6 +10,35 @@
 ## What Was Done
 
 Refactored from deep nested modules (58 files, ~13,800 lines) to flat SaaS structure (10 files, ~4,600 lines) matching the `n8n-management-mcp` template. Removed all enterprise features.
+
+---
+
+## Production Deployment ✅
+
+**URL**: `https://wordpress-nodeflow-mcp.suphakitm99.workers.dev`
+
+### Cloudflare Resources
+
+| Resource | ID |
+|----------|-----|
+| D1 Database | `654eed68-9519-4179-bc53-6c10da500a41` |
+| KV Namespace | `767e51e45f5341cca170bd867f4c9118` |
+
+### Secrets Set
+
+- `JWT_SECRET` ✅
+- `ENCRYPTION_KEY` ✅
+
+### Verified Endpoints
+
+| Test | Status |
+|------|--------|
+| `GET /` | ✅ Server status |
+| `POST /api/auth/register` | ✅ User creation |
+| `POST /api/auth/login` | ✅ JWT token |
+| `POST /api/connections` | ✅ API key `n2f_xxx` |
+| `POST /mcp` tools/list | ✅ 24 tools |
+| `POST /mcp` wp_get_posts | ✅ Real WordPress data |
 
 ---
 
@@ -238,12 +267,16 @@ These dashboard features have no backend support yet (pages show empty state):
 
 ## Next Steps
 
-1. `wrangler d1 execute wordpress-mcp-db --file=schema.sql` - Deploy schema
-2. `wrangler secret put JWT_SECRET` + `ENCRYPTION_KEY` - Set required secrets
-3. `npx wrangler dev` -> `curl http://localhost:8787/` - Test locally
-4. Send `tools/list` to `/mcp` - Verify 24 tools
-5. ~~Rework ApiKeys page to support connection-based API key flow~~ ✅ Done
-6. Add missing backend endpoints (Analytics, Usage logs, etc.)
+1. ~~Deploy schema to D1~~ ✅ Done
+2. ~~Set secrets (JWT_SECRET, ENCRYPTION_KEY)~~ ✅ Done
+3. ~~Test locally~~ ✅ Done
+4. ~~Verify 24 MCP tools~~ ✅ Done
+5. ~~Rework ApiKeys page~~ ✅ Done
+6. ~~Deploy to production~~ ✅ Done
+7. Add missing backend endpoints (Analytics, Usage logs, etc.)
+8. Deploy Dashboard to Cloudflare Pages
+9. Set up Stripe billing (optional)
+10. Set up OAuth providers (optional)
 
 ---
 
