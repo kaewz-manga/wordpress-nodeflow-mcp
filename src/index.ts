@@ -3,7 +3,7 @@
  * Multi-tenant WordPress automation via Model Context Protocol
  */
 
-import { WordPressClient } from './wp-client';
+import { WordPressClient, ImgBBClient } from './wp-client';
 import { MCPToolResponse } from './types';
 import { Env, ApiResponse, AuthContext, RateLimitInfo } from './saas-types';
 import { allTools } from './tools';
@@ -149,7 +149,8 @@ function jsonRpcError(id: string | number | null, code: number, message: string)
 async function handleToolCall(
   toolName: string,
   args: any,
-  client: WordPressClient
+  client: WordPressClient,
+  env: Env
 ): Promise<MCPToolResponse> {
   let result: any;
 
@@ -235,6 +236,21 @@ async function handleToolCall(
       case 'wp_delete_comment':
         result = await client.deleteComment(args.id, args.force);
         break;
+
+      // Storage (ImgBB)
+      case 'upload_to_imgbb': {
+        const apiKey = args.apiKey || env.IMGBB_API_KEY;
+        if (!apiKey) {
+          throw new Error('ImgBB API key not provided. Set IMGBB_API_KEY secret or pass apiKey in arguments.');
+        }
+        const imgbbClient = new ImgBBClient(apiKey);
+        result = await imgbbClient.uploadFromBase64({
+          base64: args.base64,
+          name: args.name,
+          expiration: args.expiration,
+        });
+        break;
+      }
 
       default:
         throw new Error(`Unknown tool: ${toolName}`);
@@ -957,7 +973,7 @@ async function handleMcpRequest(
           password: authContext.connection.wp_password,
         });
 
-        const result = await handleToolCall(toolName, args || {}, client);
+        const result = await handleToolCall(toolName, args || {}, client, env);
         const responseTime = Date.now() - startTime;
 
         // Check if result contains error
