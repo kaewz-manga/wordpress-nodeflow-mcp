@@ -292,7 +292,10 @@ async function handleManagementApi(
   if (oauthInitMatch && method === 'GET') {
     const provider = oauthInitMatch[1] as 'github' | 'google';
     const url = new URL(request.url);
-    const redirectUri = url.searchParams.get('redirect_uri') || `${url.origin}/api/auth/oauth/${provider}/callback`;
+    // Frontend redirect URL (where to send user after OAuth completes)
+    const frontendRedirectUri = url.searchParams.get('redirect_uri') || `${url.origin}/auth/callback`;
+    // Worker callback URL (where GitHub/Google should redirect to)
+    const workerCallbackUri = `${url.origin}/api/auth/oauth/${provider}/callback`;
 
     if (provider === 'github' && !env.GITHUB_CLIENT_ID) {
       return apiResponse({
@@ -308,8 +311,10 @@ async function handleManagementApi(
     }
 
     const state = await generateOAuthState(env.RATE_LIMIT_KV);
-    await env.RATE_LIMIT_KV.put(`oauth_redirect:${state}`, redirectUri, { expirationTtl: 600 });
-    const authorizeUrl = getOAuthAuthorizeUrl(provider, env, redirectUri, state);
+    // Store frontend redirect URL for later use after callback
+    await env.RATE_LIMIT_KV.put(`oauth_redirect:${state}`, frontendRedirectUri, { expirationTtl: 600 });
+    // Generate GitHub/Google auth URL with WORKER callback (not frontend)
+    const authorizeUrl = getOAuthAuthorizeUrl(provider, env, workerCallbackUri, state);
 
     return apiResponse({
       success: true,
@@ -347,22 +352,26 @@ async function handleManagementApi(
       }, 400);
     }
 
-    const redirectUri = await env.RATE_LIMIT_KV.get(`oauth_redirect:${state}`) ||
-      `${url.origin}/api/auth/oauth/${provider}/callback`;
+    // Get stored frontend redirect URL
+    const frontendRedirectUrl = await env.RATE_LIMIT_KV.get(`oauth_redirect:${state}`) ||
+      `${url.origin}/auth/callback`;
     await env.RATE_LIMIT_KV.delete(`oauth_redirect:${state}`);
 
-    const result = await handleOAuthCallback(provider, env, code, redirectUri);
+    // Worker callback URL (what we told GitHub to use)
+    const workerCallbackUri = `${url.origin}/api/auth/oauth/${provider}/callback`;
+    const result = await handleOAuthCallback(provider, env, code, workerCallbackUri);
 
     if (result.success && result.data) {
-      const frontendUrl = env.APP_URL || url.origin;
+      // Redirect to frontend with token
       return Response.redirect(
-        `${frontendUrl}/auth/callback?token=${result.data.token}&email=${encodeURIComponent(result.data.user.email)}`,
+        `${frontendRedirectUrl}?token=${result.data.token}&email=${encodeURIComponent(result.data.user.email)}`,
         302
       );
     } else {
-      const frontendUrl = env.APP_URL || url.origin;
+      // Extract base URL from frontend redirect URL for error redirect
+      const frontendBase = new URL(frontendRedirectUrl).origin;
       return Response.redirect(
-        `${frontendUrl}/login?error=${encodeURIComponent(result.error?.message || 'OAuth failed')}`,
+        `${frontendBase}/login?error=${encodeURIComponent(result.error?.message || 'OAuth failed')}`,
         302
       );
     }
@@ -1013,6 +1022,10 @@ export default {
         endpoints: {
           mcp: '/mcp',
           api: '/api/*',
+        },
+        oauth: {
+          github: !!env.GITHUB_CLIENT_ID,
+          google: !!env.GOOGLE_CLIENT_ID,
         },
       });
     }

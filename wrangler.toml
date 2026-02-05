@@ -2,6 +2,7 @@ name = "wordpress-nodeflow-mcp"
 main = "src/index.ts"
 compatibility_date = "2024-11-27"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
 
 # =============================================================================
 # D1 Database (SQLite) - For customers, API keys, subscriptions, usage
@@ -30,29 +31,7 @@ ENVIRONMENT = "production"
 # wrangler secret put ENCRYPTION_KEY
 
 # =============================================================================
-# Production Environment
-# =============================================================================
-[env.production]
-name = "wordpress-nodeflow-mcp"
-route = { pattern = "wordpress-mcp.nodeflow.workers.dev", zone_name = "nodeflow.workers.dev" }
-
-[[env.production.d1_databases]]
-binding = "DB"
-database_name = "wordpress-mcp-db"
-database_id = "your-production-db-id"  # Replace after `wrangler d1 create`
-
-[[env.production.kv_namespaces]]
-binding = "RATE_LIMIT_KV"
-id = "your-production-kv-id"  # Replace after `wrangler kv:namespace create`
-
-# =============================================================================
-# Development Environment
-# =============================================================================
-[env.development]
-name = "wordpress-nodeflow-mcp-dev"
-
-# =============================================================================
-# Secrets (set via `wrangler secret put <KEY>`)
+# Secrets (set via `wrangler secret put <KEY>` or Cloudflare Dashboard)
 # =============================================================================
 # WordPress Credentials (optional, for single-tenant mode):
 # WORDPRESS_URL - Default WordPress site URL

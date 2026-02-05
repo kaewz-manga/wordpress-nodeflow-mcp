@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Zap, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { api } from '../utils/api';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -11,6 +12,18 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleGitHubLogin = async () => {
+    try {
+      const redirectUri = `${window.location.origin}/auth/callback`;
+      const response = await api.get<{ success: boolean; data?: { url: string } }>(`/api/auth/oauth/github?redirect_uri=${encodeURIComponent(redirectUri)}`);
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (err) {
+      setError('Failed to start GitHub login');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,6 +159,7 @@ export default function Login() {
               </button>
               <button
                 type="button"
+                onClick={handleGitHubLogin}
                 className="btn btn-secondary flex items-center justify-center"
               >
                 <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
