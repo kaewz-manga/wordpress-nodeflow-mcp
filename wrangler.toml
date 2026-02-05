@@ -10,7 +10,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "wordpress-mcp-db"
-database_id = "local-dev-db"  # Replace with actual ID after `wrangler d1 create`
+database_id = "654eed68-9519-4179-bc53-6c10da500a41"
 
 # =============================================================================
 # KV Namespace - For rate limiting and caching
@@ -18,17 +18,16 @@ database_id = "local-dev-db"  # Replace with actual ID after `wrangler d1 create
 # Create with: wrangler kv:namespace create "RATE_LIMIT"
 [[kv_namespaces]]
 binding = "RATE_LIMIT_KV"
-id = "local-dev-kv"  # Replace with actual ID after `wrangler kv:namespace create`
+id = "767e51e45f5341cca170bd867f4c9118"
 
 # =============================================================================
 # Environment Variables
 # =============================================================================
 [vars]
 ALLOWED_ORIGINS = "*"
-ENVIRONMENT = "development"
-# Dev secrets (use wrangler secret put for production)
-JWT_SECRET = "local-dev-jwt-secret-must-be-at-least-32-characters-long"
-ENCRYPTION_KEY = "local-dev-encryption-key-32chars!"
+ENVIRONMENT = "production"
+# Secrets must be set via: wrangler secret put JWT_SECRET
+# wrangler secret put ENCRYPTION_KEY
 
 # =============================================================================
 # Production Environment
