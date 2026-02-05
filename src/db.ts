@@ -550,6 +550,156 @@ export async function getErrorTrend(
 }
 
 // ============================================
+// User Analytics & Usage Logs
+// ============================================
+
+export async function getUserUsageLogs(
+  db: D1Database,
+  userId: string,
+  limit: number = 100,
+  offset: number = 0
+): Promise<{
+  logs: Array<{
+    id: string;
+    tool: string;
+    status: 'success' | 'error';
+    responseTime: number;
+    errorMessage: string | null;
+    apiKeyName: string;
+    createdAt: string;
+  }>;
+  total: number;
+}> {
+  const [logsResult, countResult] = await Promise.all([
+    db.prepare(
+      `SELECT ul.id, ul.tool_name as tool, ul.status, ul.response_time_ms as responseTime,
+              ul.error_message as errorMessage, ak.name as apiKeyName, ul.created_at as createdAt
+       FROM usage_logs ul
+       LEFT JOIN api_keys ak ON ul.api_key_id = ak.id
+       WHERE ul.user_id = ?
+       ORDER BY ul.created_at DESC
+       LIMIT ? OFFSET ?`
+    ).bind(userId, limit, offset).all(),
+    db.prepare(
+      'SELECT COUNT(*) as total FROM usage_logs WHERE user_id = ?'
+    ).bind(userId).first<{ total: number }>(),
+  ]);
+
+  return {
+    logs: (logsResult.results || []).map((r: any) => ({
+      id: r.id,
+      tool: r.tool,
+      status: r.status as 'success' | 'error',
+      responseTime: r.responseTime || 0,
+      errorMessage: r.errorMessage,
+      apiKeyName: r.apiKeyName || 'Unknown',
+      createdAt: r.createdAt,
+    })),
+    total: countResult?.total || 0,
+  };
+}
+
+export async function getUserAnalytics(
+  db: D1Database,
+  userId: string,
+  days: number = 30
+): Promise<{
+  summary: {
+    totalRequests: number;
+    avgResponseTime: number;
+    errorRate: number;
+    uniqueTools: number;
+  };
+  requestsOverTime: Array<{ date: string; requests: number; errors: number }>;
+  toolUsage: Array<{ tool: string; count: number }>;
+  responseTimeDistribution: Array<{ range: string; count: number }>;
+  errorsByType: Array<{ type: string; count: number }>;
+}> {
+  const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+
+  const [summary, timeseries, tools, rtDist, errors] = await Promise.all([
+    // Summary stats
+    db.prepare(
+      `SELECT
+        COUNT(*) as totalRequests,
+        AVG(response_time_ms) as avgResponseTime,
+        SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END) * 100.0 / COUNT(*) as errorRate,
+        COUNT(DISTINCT tool_name) as uniqueTools
+       FROM usage_logs WHERE user_id = ? AND created_at >= ?`
+    ).bind(userId, since).first<any>(),
+
+    // Requests over time
+    db.prepare(
+      `SELECT DATE(created_at) as date, COUNT(*) as requests,
+              SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END) as errors
+       FROM usage_logs WHERE user_id = ? AND created_at >= ?
+       GROUP BY DATE(created_at) ORDER BY date`
+    ).bind(userId, since).all(),
+
+    // Tool usage
+    db.prepare(
+      `SELECT tool_name as tool, COUNT(*) as count
+       FROM usage_logs WHERE user_id = ? AND created_at >= ?
+       GROUP BY tool_name ORDER BY count DESC LIMIT 10`
+    ).bind(userId, since).all(),
+
+    // Response time distribution
+    db.prepare(
+      `SELECT
+        CASE
+          WHEN response_time_ms < 100 THEN '<100ms'
+          WHEN response_time_ms < 500 THEN '100-500ms'
+          WHEN response_time_ms < 1000 THEN '500ms-1s'
+          ELSE '>1s'
+        END as range,
+        COUNT(*) as count
+       FROM usage_logs WHERE user_id = ? AND created_at >= ?
+       GROUP BY range ORDER BY
+        CASE range WHEN '<100ms' THEN 1 WHEN '100-500ms' THEN 2 WHEN '500ms-1s' THEN 3 ELSE 4 END`
+    ).bind(userId, since).all(),
+
+    // Errors by type
+    db.prepare(
+      `SELECT
+        CASE
+          WHEN error_message LIKE '%timeout%' THEN 'Timeout'
+          WHEN error_message LIKE '%401%' OR error_message LIKE '%unauthorized%' THEN 'Auth Error'
+          WHEN error_message LIKE '%404%' OR error_message LIKE '%not found%' THEN 'Not Found'
+          WHEN error_message LIKE '%500%' OR error_message LIKE '%server%' THEN 'Server Error'
+          ELSE 'Other'
+        END as type,
+        COUNT(*) as count
+       FROM usage_logs WHERE user_id = ? AND created_at >= ? AND status = 'error'
+       GROUP BY type ORDER BY count DESC`
+    ).bind(userId, since).all(),
+  ]);
+
+  return {
+    summary: {
+      totalRequests: summary?.totalRequests || 0,
+      avgResponseTime: summary?.avgResponseTime || 0,
+      errorRate: summary?.errorRate || 0,
+      uniqueTools: summary?.uniqueTools || 0,
+    },
+    requestsOverTime: (timeseries.results || []) as any[],
+    toolUsage: (tools.results || []) as any[],
+    responseTimeDistribution: (rtDist.results || []) as any[],
+    errorsByType: (errors.results || []) as any[],
+  };
+}
+
+export async function updateUserProfile(
+  db: D1Database,
+  userId: string,
+  name: string
+): Promise<void> {
+  await db
+    .prepare('UPDATE users SET name = ?, updated_at = ? WHERE id = ?')
+    .bind(name, new Date().toISOString(), userId)
+    .run();
+}
+
+// ============================================
 // Utility Functions
 // ============================================
 

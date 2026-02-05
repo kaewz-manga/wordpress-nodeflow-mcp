@@ -173,7 +173,8 @@ Default plans:
 - `POST /api/webhooks/stripe` - Stripe webhook
 
 ### Authenticated (JWT)
-- `GET /api/user/profile` - Current user
+- `GET /api/user/profile` - Current user (includes name)
+- `PUT /api/user/profile` - Update user name
 - `PUT /api/user/password` - Change password
 - `DELETE /api/user` - Delete account
 - `GET /api/connections` - List WordPress connections
@@ -182,6 +183,8 @@ Default plans:
 - `POST /api/connections/:id/api-keys` - Generate API key
 - `DELETE /api/api-keys/:id` - Revoke API key
 - `GET /api/usage` - Usage stats
+- `GET /api/usage/logs` - Detailed per-request logs (pagination: limit, offset)
+- `GET /api/analytics` - User analytics (period: 7d, 30d, 90d)
 - `POST /api/billing/checkout` - Stripe checkout
 - `POST /api/billing/portal` - Stripe billing portal
 
@@ -257,13 +260,16 @@ Default plans:
 - `DELETE /api/api-keys/:id` → Revokes API key
 - `DELETE /api/connections/:id` → Deletes connection
 
-### Missing Backend Endpoints
+### ~~Missing Backend Endpoints~~ ✅ MOSTLY FIXED
 
-These dashboard features have no backend support yet (pages show empty state):
-- Analytics charts (request volume, response time distribution, tool usage, errors by type)
-- Usage logs (detailed per-request log entries)
-- Notification preferences (save/load)
-- Profile update (name field)
+Added in latest update:
+- ✅ `GET /api/analytics` - Request volume, response time distribution, tool usage, errors by type
+- ✅ `GET /api/usage/logs` - Detailed per-request log entries with pagination
+- ✅ `PUT /api/user/profile` - Update user name
+- ✅ `GET /api/user/profile` - Now includes name field
+
+Still missing:
+- Notification preferences (save/load) - Dashboard page needs backend
 
 ---
 
@@ -276,7 +282,7 @@ These dashboard features have no backend support yet (pages show empty state):
 5. ~~Rework ApiKeys page~~ ✅ Done
 6. ~~Deploy Worker to production~~ ✅ Done
 7. ~~Deploy Dashboard to Cloudflare Pages~~ ✅ Done
-8. Add missing backend endpoints (Analytics, Usage logs, etc.)
+8. ~~Add missing backend endpoints (Analytics, Usage logs, etc.)~~ ✅ Done
 9. Set up Stripe billing (optional)
 10. Set up OAuth providers (optional)
 

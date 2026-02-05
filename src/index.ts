@@ -48,6 +48,9 @@ import {
   getRecentErrors,
   getPlanDistribution,
   getErrorTrend,
+  getUserUsageLogs,
+  getUserAnalytics,
+  updateUserProfile,
 } from './db';
 import { hashPassword, verifyPassword } from './crypto-utils';
 import { generateApiKey } from './crypto-utils';
@@ -584,6 +587,7 @@ async function handleManagementApi(
       data: {
         id: user.id,
         email: user.email,
+        name: (user as any).name || null,
         plan: user.plan,
         status: user.status,
         is_admin: (user as any).is_admin || 0,
@@ -825,6 +829,54 @@ async function handleManagementApi(
     });
   }
 
+  // GET /api/usage/logs
+  if (path === '/api/usage/logs' && method === 'GET') {
+    const url = new URL(request.url);
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '100'), 500);
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+
+    const { logs, total } = await getUserUsageLogs(env.DB, authUser.userId, limit, offset);
+
+    return apiResponse({
+      success: true,
+      data: { logs, total, limit, offset },
+    });
+  }
+
+  // GET /api/analytics
+  if (path === '/api/analytics' && method === 'GET') {
+    const url = new URL(request.url);
+    const period = url.searchParams.get('period') || '30d';
+    const days = period === '7d' ? 7 : period === '90d' ? 90 : 30;
+
+    const analytics = await getUserAnalytics(env.DB, authUser.userId, days);
+
+    return apiResponse({
+      success: true,
+      data: analytics,
+    });
+  }
+
+  // PUT /api/user/profile
+  if (path === '/api/user/profile' && method === 'PUT') {
+    const body = await request.json() as { name?: string };
+
+    if (body.name !== undefined) {
+      await updateUserProfile(env.DB, authUser.userId, body.name);
+    }
+
+    const user = await getUserById(env.DB, authUser.userId);
+    return apiResponse({
+      success: true,
+      data: {
+        id: user?.id,
+        email: user?.email,
+        name: (user as any)?.name || null,
+        plan: user?.plan,
+      },
+    });
+  }
+
   // Not found
   return apiResponse(
     { success: false, error: { code: 'NOT_FOUND', message: 'Endpoint not found' } },
@@ -967,7 +1019,18 @@ export default {
 
     // Management API
     if (path.startsWith('/api/')) {
-      return handleManagementApi(request, env, path);
+      try {
+        return await handleManagementApi(request, env, path);
+      } catch (err: any) {
+        console.error('Management API error:', err);
+        return apiResponse({
+          success: false,
+          error: {
+            code: 'INTERNAL_ERROR',
+            message: err.message || 'An unexpected error occurred',
+          },
+        }, 500);
+      }
     }
 
     // MCP endpoint

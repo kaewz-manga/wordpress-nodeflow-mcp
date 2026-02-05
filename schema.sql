@@ -7,6 +7,7 @@
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
+    name TEXT,  -- Display name (optional)
     password_hash TEXT,  -- NULL for OAuth users
     oauth_provider TEXT,  -- 'github', 'google', or NULL for email/password
     oauth_id TEXT,  -- Provider's user ID
