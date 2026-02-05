@@ -2,7 +2,7 @@
 
 **Date**: 2026-02-05
 **Branch**: `main`
-**Commit**: `9548f59` (GitHub OAuth working)
+**Commit**: `419807f` (Google OAuth working)
 **Template**: `n8n-management-mcp` (same parent directory)
 
 ---
@@ -32,6 +32,8 @@ Refactored from deep nested modules (58 files, ~13,800 lines) to flat SaaS struc
 - `ENCRYPTION_KEY` ✅
 - `GITHUB_CLIENT_ID` ✅
 - `GITHUB_CLIENT_SECRET` ✅
+- `GOOGLE_CLIENT_ID` ✅
+- `GOOGLE_CLIENT_SECRET` ✅
 
 ### Verified Endpoints
 
@@ -41,6 +43,7 @@ Refactored from deep nested modules (58 files, ~13,800 lines) to flat SaaS struc
 | `POST /api/auth/register` | ✅ User creation |
 | `POST /api/auth/login` | ✅ JWT token |
 | `GET /api/auth/oauth/github` | ✅ GitHub OAuth |
+| `GET /api/auth/oauth/google` | ✅ Google OAuth |
 | `POST /api/connections` | ✅ API key `n2f_xxx` |
 | `GET /api/analytics` | ✅ User analytics |
 | `GET /api/usage/logs` | ✅ Usage logs |
@@ -75,8 +78,23 @@ Refactored from deep nested modules (58 files, ~13,800 lines) to flat SaaS struc
 
 - `src/index.ts` - OAuth initiate + callback handlers
 - `src/oauth.ts` - GitHub/Google OAuth helpers
-- `dashboard/src/pages/Login.tsx` - GitHub login button
+- `dashboard/src/pages/Login.tsx` - GitHub + Google login buttons
 - `dashboard/src/pages/AuthCallback.tsx` - Token handler
+
+---
+
+## Google OAuth Setup ✅
+
+### Configuration
+
+**Google Cloud Console Settings**:
+- Application name: `WordPress MCP Dashboard`
+- Authorized JavaScript origins: `https://wordpress-mcp-dashboard.pages.dev`
+- Authorized redirect URI: `https://wordpress-nodeflow-mcp.suphakitm99.workers.dev/api/auth/oauth/google/callback`
+
+### OAuth Flow
+
+Same as GitHub - worker handles callback and redirects to dashboard with token.
 
 ---
 
@@ -97,7 +115,7 @@ src/
 
 dashboard/src/
 ├── pages/
-│   ├── Login.tsx           - Email + GitHub OAuth login
+│   ├── Login.tsx           - Email + GitHub + Google OAuth login
 │   ├── AuthCallback.tsx    - OAuth callback handler
 │   └── ...
 └── hooks/
@@ -289,7 +307,8 @@ Default plans:
 - [x] Added analytics and usage logs endpoints
 - [x] Added user profile name field
 - [x] **GitHub OAuth working** ✅
-- [x] Dashboard GitHub login button
+- [x] **Google OAuth working** ✅
+- [x] Dashboard GitHub + Google login buttons
 - [x] AuthCallback page for OAuth token handling
 
 ---
@@ -305,7 +324,7 @@ Default plans:
 7. ~~Deploy Dashboard to Cloudflare Pages~~ ✅ Done
 8. ~~Add missing backend endpoints~~ ✅ Done
 9. ~~Set up GitHub OAuth~~ ✅ Done
-10. Set up Google OAuth (optional)
+10. ~~Set up Google OAuth~~ ✅ Done
 11. Set up Stripe billing (optional)
 12. Add notification preferences endpoint (optional)
 
@@ -319,4 +338,4 @@ Default plans:
 - **TypeScript**: Strict mode enabled, `npx tsc --noEmit` must pass clean.
 - **SSRF Protection**: `wp-client.ts` blocks requests to localhost, private IPs, and cloud metadata endpoints.
 - **OAuth Secrets**: Must use `wrangler secret put`, NOT Cloudflare Dashboard.
-- **GitHub OAuth Callback**: Must point to Worker (`/api/auth/oauth/github/callback`), NOT Dashboard.
+- **OAuth Callbacks**: Must point to Worker (`/api/auth/oauth/{provider}/callback`), NOT Dashboard.
