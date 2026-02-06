@@ -11,6 +11,7 @@ import {
   CreditCard,
   Settings,
   BookOpen,
+  Shield,
   LogOut,
   Menu,
   X,
@@ -27,6 +28,7 @@ const navigation = [
 
 const secondaryNav = [
   { name: 'Documentation', href: '/docs', icon: BookOpen },
+  { name: 'Admin Panel', href: '/admin', icon: Shield, adminOnly: true },
 ];
 
 export default function Layout() {
@@ -94,7 +96,9 @@ export default function Layout() {
 
           {/* Secondary Navigation */}
           <div className="px-4 py-4 border-t border-n2f-border">
-            {secondaryNav.map((item) => (
+            {secondaryNav
+              .filter((item) => !('adminOnly' in item && item.adminOnly) || user?.is_admin)
+              .map((item) => (
               <NavLink
                 key={item.name}
                 to={item.href}

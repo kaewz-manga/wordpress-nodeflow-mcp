@@ -261,9 +261,10 @@ Would you like me to publish it or add a featured image?`}</code>
             </div>
             <div className="flex space-x-6 text-sm">
               <Link to="/docs" className="text-n2f-text-muted hover:text-n2f-accent">Documentation</Link>
-              <a href="#" className="text-n2f-text-muted hover:text-n2f-accent">Privacy</a>
-              <a href="#" className="text-n2f-text-muted hover:text-n2f-accent">Terms</a>
-              <a href="https://github.com" className="text-n2f-text-muted hover:text-n2f-accent">GitHub</a>
+              <Link to="/faq" className="text-n2f-text-muted hover:text-n2f-accent">FAQ</Link>
+              <Link to="/status" className="text-n2f-text-muted hover:text-n2f-accent">Status</Link>
+              <Link to="/privacy" className="text-n2f-text-muted hover:text-n2f-accent">Privacy</Link>
+              <Link to="/terms" className="text-n2f-text-muted hover:text-n2f-accent">Terms</Link>
             </div>
           </div>
           <div className="mt-8 text-center text-sm text-n2f-text-muted">
