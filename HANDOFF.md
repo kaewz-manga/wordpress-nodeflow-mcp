@@ -2,7 +2,7 @@
 
 **Date**: 2026-02-06
 **Branch**: `main`
-**Last Commit**: `a244e47` (upload_to_imgbb tool handler)
+**Last Commit**: `11e4943` (Privacy, Terms, FAQ, Status, Admin pages)
 **Template**: `n8n-management-mcp` (same parent directory)
 
 ---
@@ -11,7 +11,9 @@
 
 Refactored from deep nested modules (58 files, ~13,800 lines) to flat SaaS structure (10 files, ~4,600 lines) matching the `n8n-management-mcp` template. Removed all enterprise features.
 
-**Latest change**: Moved ImgBB API key from server environment to per-user storage in `wp_connections` table (encrypted). Users provide their own ImgBB key when creating a connection.
+**Latest changes**:
+1. **Dark theme UI upgrade** (`79da1aa`) - Migrated entire dashboard from light to dark theme (n2f-* color system, blue #3b82f6 accent). Merged Header+Sidebar into unified Layout with mobile drawer. 18 files changed.
+2. **New pages** (`11e4943`) - Added Privacy, Terms, FAQ, Status (public) + Admin Overview/Users/Analytics/Revenue/Health (admin-only) with AdminLayout/AdminRoute components. 14 files, +2010 lines.
 
 ---
 
@@ -52,6 +54,72 @@ Refactored from deep nested modules (58 files, ~13,800 lines) to flat SaaS struc
 | `GET /api/usage/logs` | ✅ Usage logs |
 | `POST /mcp` tools/list | ✅ 24 tools |
 | `POST /mcp` wp_get_posts | ✅ Real WordPress data |
+
+---
+
+## Dashboard Dark Theme ✅
+
+### Before vs After
+
+| | Before | After |
+|---|---|---|
+| **Theme** | Light (white bg, gray borders) | Dark (n2f-* color system) |
+| **Accent** | Sky blue (#0284c7) | Blue (#3b82f6) |
+| **Layout** | Separate Header.tsx + Sidebar.tsx | Unified Layout.tsx with mobile drawer |
+| **Components** | Basic Tailwind classes | Reusable `.btn-primary`, `.card`, `.input` |
+| **Admin nav** | None | Admin Panel link (visible to is_admin users) |
+
+### Color System (tailwind.config.js)
+
+| Token | Value | Usage |
+|---|---|---|
+| `n2f-bg` | `#050508` | Page background |
+| `n2f-card` | `#0a0b0e` | Card surfaces |
+| `n2f-elevated` | `#12141a` | Elevated surfaces, inputs |
+| `n2f-accent` | `#3b82f6` | Primary accent (blue) |
+| `n2f-text` | `#f9fafb` | Primary text |
+| `n2f-text-secondary` | `#9ca3af` | Secondary text |
+| `n2f-text-muted` | `#6b7280` | Muted text |
+| `n2f-border` | `#1f2937` | Borders |
+
+### Files Changed (18 files)
+
+| Action | Files |
+|---|---|
+| **Added** | `tailwind.config.js` (n2f colors) |
+| **Rewritten** | `index.css` (dark theme classes), `Layout.tsx` (unified sidebar) |
+| **Deleted** | `Header.tsx`, `Sidebar.tsx` (merged into Layout) |
+| **Updated** | All 13 page files + `App.tsx` + `format.ts` |
+
+---
+
+## New Pages ✅
+
+### Public Pages (no auth required)
+
+| Route | Page | Description |
+|---|---|---|
+| `/privacy` | Privacy.tsx | Privacy policy with WordPress-specific data collection info |
+| `/terms` | Terms.tsx | Terms of service with AI agent responsibility clause |
+| `/faq` | FAQ.tsx | 5 categories, searchable, accordion UI |
+| `/status` | Status.tsx | Live health check (pings `/api/plans`), 90-day uptime bar |
+
+### Admin Pages (requires is_admin=1)
+
+| Route | Page | API Endpoint |
+|---|---|---|
+| `/admin` | AdminOverview.tsx | `GET /api/admin/stats` |
+| `/admin/users` | AdminUsers.tsx | `GET /api/admin/users` + plan/status/delete actions |
+| `/admin/analytics` | AdminAnalytics.tsx | `GET /api/admin/analytics/usage,tools,top-users` |
+| `/admin/revenue` | AdminRevenue.tsx | `GET /api/admin/revenue/overview` |
+| `/admin/health` | AdminHealth.tsx | `GET /api/admin/health/errors,error-trend` |
+
+### Components Added
+
+| File | Purpose |
+|---|---|
+| `AdminLayout.tsx` | Admin sidebar with 5 nav items + Back to Dashboard link |
+| `AdminRoute.tsx` | Route guard: redirects non-admin to `/dashboard`, unauthenticated to `/login` |
 
 ---
 
@@ -178,13 +246,39 @@ src/
 └── types.ts          (~20 lines)   - Base MCP types
 
 dashboard/src/
+├── components/
+│   ├── Layout.tsx          - Unified sidebar + mobile drawer (dark theme)
+│   ├── AdminLayout.tsx     - Admin panel sidebar layout
+│   └── AdminRoute.tsx      - Admin route guard (is_admin check)
 ├── pages/
+│   ├── Landing.tsx         - Public landing page (dark theme)
 │   ├── Login.tsx           - Email + GitHub + Google OAuth login
+│   ├── Register.tsx        - Account registration
 │   ├── AuthCallback.tsx    - OAuth callback handler
-│   ├── ApiKeys.tsx         - Connections + API keys + ImgBB key field
-│   └── ...
-└── hooks/
-    └── useAuth.tsx         - Auth context with setUser
+│   ├── Dashboard.tsx       - Overview stats + charts
+│   ├── ApiKeys.tsx         - Connections + API keys + ImgBB key
+│   ├── Usage.tsx           - Request logs + filtering
+│   ├── Analytics.tsx       - Charts (recharts)
+│   ├── Billing.tsx         - Stripe plans + invoices
+│   ├── Settings.tsx        - Profile, password, 2FA, notifications
+│   ├── Docs.tsx            - Documentation viewer
+│   ├── Privacy.tsx         - Privacy policy (WordPress-specific)
+│   ├── Terms.tsx           - Terms of service
+│   ├── FAQ.tsx             - FAQ with search + accordion
+│   ├── Status.tsx          - System status (live health check)
+│   └── admin/
+│       ├── AdminOverview.tsx   - Admin dashboard stats
+│       ├── AdminUsers.tsx      - User management (search, plan, suspend)
+│       ├── AdminAnalytics.tsx  - Usage timeseries + top tools/users
+│       ├── AdminRevenue.tsx    - MRR + plan distribution
+│       └── AdminHealth.tsx     - Error trend + recent errors
+├── hooks/
+│   └── useAuth.tsx         - Auth context with setUser
+├── utils/
+│   ├── api.ts              - API client with JWT auth
+│   └── format.ts           - Tier labels + colors
+└── styles/
+    └── index.css           - Dark theme component classes (btn, card, input)
 
 migrations/
 ├── 0001_initial_schema.sql - 7 tables
@@ -324,6 +418,9 @@ status, last_tested_at, created_at, updated_at
 - [x] AuthCallback page for OAuth token handling
 - [x] **ImgBB per-user API key** ✅ (migration applied, deployed)
 - [x] **CI/CD pipelines** ✅ (ci.yml + deploy.yml, 49 tests passing)
+- [x] **Dark theme UI** ✅ (`79da1aa`) - n2f-* color system, blue accent (#3b82f6), unified Layout
+- [x] **Public pages** ✅ (`11e4943`) - Privacy, Terms, FAQ (search+accordion), Status (live health check)
+- [x] **Admin panel** ✅ (`11e4943`) - Overview, Users, Analytics, Revenue, Health with AdminLayout/AdminRoute
 
 ---
 
@@ -340,9 +437,12 @@ status, last_tested_at, created_at, updated_at
 9. ~~Set up GitHub OAuth~~ ✅ Done
 10. ~~Set up Google OAuth~~ ✅ Done
 11. ~~ImgBB per-user API key~~ ✅ Done
-12. Set up Stripe billing (optional)
-13. Add notification preferences endpoint (optional)
-14. Add PUT /api/connections/:id to update existing connection (e.g., add ImgBB key later)
+12. ~~Dark theme UI upgrade~~ ✅ Done
+13. ~~Add Privacy, Terms, FAQ, Status pages~~ ✅ Done
+14. ~~Add Admin panel (Overview, Users, Analytics, Revenue, Health)~~ ✅ Done
+15. Set up Stripe billing (optional)
+16. Add notification preferences endpoint (optional)
+17. Add PUT /api/connections/:id to update existing connection (e.g., add ImgBB key later)
 
 ---
 
@@ -357,3 +457,5 @@ status, last_tested_at, created_at, updated_at
 - **OAuth Callbacks**: Must point to Worker (`/api/auth/oauth/{provider}/callback`), NOT Dashboard.
 - **ImgBB Key**: Per-user, stored encrypted in `wp_connections`. No server-wide key needed.
 - **KV Cache**: API key auth cached 1 hour in KV. If user updates ImgBB key, cache must expire first (or clear manually).
+- **Dashboard Theme**: Dark theme with n2f-* colors (blue accent #3b82f6). All pages use `.card`, `.btn-primary`, `.input` classes from `index.css`.
+- **Admin Access**: Admin pages at `/admin/*` require `is_admin=1` on user record. AdminRoute component handles guard.
