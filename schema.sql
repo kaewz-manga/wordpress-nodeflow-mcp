@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS wp_connections (
     wp_url TEXT NOT NULL,
     wp_username_encrypted TEXT NOT NULL,
     wp_password_encrypted TEXT NOT NULL,
+    imgbb_api_key_encrypted TEXT,
     status TEXT DEFAULT 'active',  -- active, inactive, error, deleted
     last_tested_at TEXT,
     created_at TEXT DEFAULT (datetime('now')),

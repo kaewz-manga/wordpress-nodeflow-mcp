@@ -1,8 +1,8 @@
 # Handoff: wordpress-nodeflow-mcp
 
-**Date**: 2026-02-05
+**Date**: 2026-02-06
 **Branch**: `main`
-**Commit**: `419807f` (Google OAuth working)
+**Last Commit**: `a244e47` (upload_to_imgbb tool handler)
 **Template**: `n8n-management-mcp` (same parent directory)
 
 ---
@@ -10,6 +10,8 @@
 ## What Was Done
 
 Refactored from deep nested modules (58 files, ~13,800 lines) to flat SaaS structure (10 files, ~4,600 lines) matching the `n8n-management-mcp` template. Removed all enterprise features.
+
+**Latest change**: Moved ImgBB API key from server environment to per-user storage in `wp_connections` table (encrypted). Users provide their own ImgBB key when creating a connection.
 
 ---
 
@@ -44,11 +46,55 @@ Refactored from deep nested modules (58 files, ~13,800 lines) to flat SaaS struc
 | `POST /api/auth/login` | ✅ JWT token |
 | `GET /api/auth/oauth/github` | ✅ GitHub OAuth |
 | `GET /api/auth/oauth/google` | ✅ Google OAuth |
-| `POST /api/connections` | ✅ API key `n2f_xxx` |
+| `POST /api/connections` | ✅ API key `n2f_xxx` + optional ImgBB key |
+| `GET /api/connections` | ✅ Includes `has_imgbb_key` flag |
 | `GET /api/analytics` | ✅ User analytics |
 | `GET /api/usage/logs` | ✅ Usage logs |
 | `POST /mcp` tools/list | ✅ 24 tools |
 | `POST /mcp` wp_get_posts | ✅ Real WordPress data |
+
+---
+
+## ImgBB Per-User API Key ✅
+
+### Before vs After
+
+| | Before | After |
+|---|---|---|
+| **Key source** | `env.IMGBB_API_KEY` (server-wide) or `args.apiKey` (per-call) | `wp_connections.imgbb_api_key_encrypted` (per-user) |
+| **Who provides key** | Server owner | Each user |
+| **Storage** | Plain text in env | AES-GCM encrypted in D1 |
+| **Tool argument** | `apiKey` (optional) | Removed |
+
+### How It Works
+
+```
+1. User creates connection → provides ImgBB API key (optional field)
+2. Key encrypted with AES-GCM → stored in wp_connections.imgbb_api_key_encrypted
+3. On MCP call → authenticateMcpRequest() decrypts key → passes via AuthContext
+4. upload_to_imgbb handler reads key from context.connection.imgbb_api_key
+5. If no key configured → returns error "ImgBB API key not configured"
+```
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `schema.sql` | Added `imgbb_api_key_encrypted TEXT` to `wp_connections` |
+| `migrations/0002_add_imgbb_api_key.sql` | ALTER TABLE for production D1 (already applied) |
+| `src/saas-types.ts` | Added to `WordPressConnection`, `AuthContext`, `CreateConnectionRequest`; removed `IMGBB_API_KEY` from `Env` |
+| `src/db.ts` | `createConnection()` accepts `imgbbApiKeyEncrypted` param |
+| `src/auth.ts` | `handleCreateConnection()` encrypts + stores ImgBB key; `authenticateMcpRequest()` decrypts + passes in context |
+| `src/index.ts` | `POST /api/connections` passes `imgbb_api_key`; `handleToolCall()` uses context key; `GET /api/connections` returns `has_imgbb_key` |
+| `src/tools.ts` | Removed `apiKey` argument from `upload_to_imgbb` |
+| `dashboard/src/pages/ApiKeys.tsx` | Added ImgBB API Key input field + purple "ImgBB" badge on connections |
+
+### Migration
+
+```bash
+# Already applied to production:
+wrangler d1 execute wordpress-mcp-db --remote --file=./migrations/0002_add_imgbb_api_key.sql
+```
 
 ---
 
@@ -98,91 +144,59 @@ Same as GitHub - worker handles callback and redirects to dashboard with token.
 
 ---
 
+## CI/CD ✅
+
+### GitHub Actions
+
+| Workflow | File | Trigger | Steps |
+|----------|------|---------|-------|
+| **CI** | `.github/workflows/ci.yml` | push/PR to main | type-check → test |
+| **Deploy** | `.github/workflows/deploy.yml` | push to main (excl. md/tests/dashboard) | type-check → test → deploy worker |
+
+### Test Status
+
+- 3 test files, 49 tests, all passing
+- `tests/tools.test.ts` (14 tests)
+- `tests/wp-client.test.ts` (16 tests)
+- `tests/crypto-utils.test.ts` (19 tests)
+
+---
+
 ## File Structure
 
 ```
 src/
-├── index.ts          (1050 lines) - Main router, API routes, MCP handler
-├── tools.ts          (614 lines)  - 24 MCP tool definitions
-├── db.ts             (720 lines)  - All D1 database operations
-├── auth.ts           (563 lines)  - Register, login, API key auth, connections
-├── wp-client.ts      (525 lines)  - WordPress REST API + ImgBB client
-├── saas-types.ts     (417 lines)  - All TypeScript interfaces
-├── oauth.ts          (329 lines)  - GitHub + Google OAuth flows
-├── crypto-utils.ts   (306 lines)  - PBKDF2, AES-GCM, JWT, API keys
-├── stripe.ts         (286 lines)  - Checkout, portal, webhooks
-└── types.ts          (20 lines)   - Base MCP types
+├── index.ts          (~1060 lines) - Main router, API routes, MCP handler
+├── tools.ts          (~610 lines)  - 24 MCP tool definitions
+├── db.ts             (~720 lines)  - All D1 database operations
+├── auth.ts           (~575 lines)  - Register, login, API key auth, connections
+├── wp-client.ts      (~525 lines)  - WordPress REST API + ImgBB client
+├── saas-types.ts     (~415 lines)  - All TypeScript interfaces
+├── oauth.ts          (~329 lines)  - GitHub + Google OAuth flows
+├── crypto-utils.ts   (~306 lines)  - PBKDF2, AES-GCM, JWT, API keys
+├── stripe.ts         (~286 lines)  - Checkout, portal, webhooks
+└── types.ts          (~20 lines)   - Base MCP types
 
 dashboard/src/
 ├── pages/
 │   ├── Login.tsx           - Email + GitHub + Google OAuth login
 │   ├── AuthCallback.tsx    - OAuth callback handler
+│   ├── ApiKeys.tsx         - Connections + API keys + ImgBB key field
 │   └── ...
 └── hooks/
     └── useAuth.tsx         - Auth context with setUser
 
-schema.sql            (150 lines)  - D1 database schema (7 tables)
+migrations/
+├── 0001_initial_schema.sql - 7 tables
+└── 0002_add_imgbb_api_key.sql - Add imgbb_api_key_encrypted column
+
+schema.sql            (~150 lines)  - D1 database schema (7 tables)
 wrangler.toml                      - D1 + KV bindings
+
+.github/workflows/
+├── ci.yml            - CI: type-check + test
+└── deploy.yml        - Deploy: type-check + test + wrangler deploy
 ```
-
----
-
-## What Was Removed
-
-Enterprise features not in the template:
-
-- SSO (SAML/OIDC)
-- SLA Dashboard
-- Team Management (roles, invitations)
-- Webhooks (event dispatcher)
-- Custom Domains (domain mapping, SSL)
-- Audit Logs (enterprise trail)
-- Admin Portal (enterprise admin)
-
----
-
-## Key Differences from Template
-
-### 1. WordPress Connections vs n8n Connections
-
-WordPress stores **two** encrypted fields (username + password), n8n stores **one** (api_key):
-
-| Template (n8n) | WordPress |
-|---|---|
-| `n8n_url` | `wp_url` |
-| `n8n_api_key_encrypted` | `wp_username_encrypted` |
-| - | `wp_password_encrypted` |
-
-Table: `wp_connections` (was `n8n_connections`)
-
-### 2. AuthContext
-
-```typescript
-// Template
-connection: { id, n8n_url, n8n_api_key }
-
-// WordPress
-connection: { id, wp_url, wp_username, wp_password }
-```
-
-### 3. Connection Test
-
-Template tests: `GET {n8n_url}/api/v1/workflows?limit=1` with `X-N8N-API-KEY` header
-WordPress tests: `GET {wp_url}/wp-json/wp/v2/posts?per_page=1` with Basic Auth header
-
-Application password spaces are cleaned automatically before storing.
-
-### 4. Encryption Salt
-
-`wp-mcp-saas-salt` (was `n8n-mcp-saas-salt`)
-
-### 5. No Proxy API
-
-Template has `/api/n8n/*` proxy routes. WordPress doesn't need this - all operations go through MCP tool calls at `/mcp`.
-
-### 6. No AI/Bot Connections
-
-Template has `ai_connections` and `bot_connections`. Not carried over (n8n-specific).
 
 ---
 
@@ -196,7 +210,7 @@ Template has `ai_connections` and `bot_connections`. Not carried over (n8n-speci
 | Categories (4) | `wp_get_categories`, `wp_get_category`, `wp_create_category`, `wp_delete_category` |
 | Tags (2) | `wp_get_tags`, `wp_create_tag` |
 | Comments (4) | `wp_get_comments`, `wp_approve_comment`, `wp_spam_comment`, `wp_delete_comment` |
-| Storage (1) | `upload_to_imgbb` |
+| Storage (1) | `upload_to_imgbb` (uses per-user ImgBB API key from connection) |
 
 ---
 
@@ -205,21 +219,20 @@ Template has `ai_connections` and `bot_connections`. Not carried over (n8n-speci
 | Table | Purpose |
 |---|---|
 | `users` | Email/password or OAuth users with plan + admin flag + name |
-| `wp_connections` | Encrypted WordPress credentials per user |
+| `wp_connections` | Encrypted WordPress credentials + ImgBB API key per user |
 | `api_keys` | SaaS API keys (hashed, linked to connection) |
 | `usage_logs` | Per-request logging (tool, status, response time) |
 | `usage_monthly` | Aggregated monthly counts per user |
 | `plans` | Plan definitions (free/starter/pro/enterprise) |
 | `admin_logs` | Admin action audit trail |
 
-Default plans:
+### wp_connections columns
 
-| Plan | Requests/mo | Connections | Price |
-|---|---|---|---|
-| Free | 100 | 1 | $0 |
-| Starter | 1,000 | 3 | $9.99 |
-| Pro | 10,000 | 10 | $29.99 |
-| Enterprise | 100,000 | Unlimited | $99.99 |
+```sql
+id, user_id, name, wp_url,
+wp_username_encrypted, wp_password_encrypted, imgbb_api_key_encrypted,
+status, last_tested_at, created_at, updated_at
+```
 
 ---
 
@@ -239,14 +252,14 @@ Default plans:
 - `PUT /api/user/profile` - Update user name
 - `PUT /api/user/password` - Change password
 - `DELETE /api/user` - Delete account
-- `GET /api/connections` - List WordPress connections
-- `POST /api/connections` - Create connection (tests WP, generates API key)
+- `GET /api/connections` - List connections (includes `has_imgbb_key`)
+- `POST /api/connections` - Create connection (accepts optional `imgbb_api_key`)
 - `DELETE /api/connections/:id` - Delete connection
 - `POST /api/connections/:id/api-keys` - Generate API key
 - `DELETE /api/api-keys/:id` - Revoke API key
 - `GET /api/usage` - Usage stats
-- `GET /api/usage/logs` - Detailed per-request logs (pagination: limit, offset)
-- `GET /api/analytics` - User analytics (period: 7d, 30d, 90d)
+- `GET /api/usage/logs` - Detailed per-request logs
+- `GET /api/analytics` - User analytics
 - `POST /api/billing/checkout` - Stripe checkout
 - `POST /api/billing/portal` - Stripe billing portal
 
@@ -289,11 +302,10 @@ Default plans:
 | `WORDPRESS_URL` | No | Default WP URL (single-tenant) |
 | `WORDPRESS_USERNAME` | No | Default WP username |
 | `WORDPRESS_APP_PASSWORD` | No | Default WP app password |
-| `IMGBB_API_KEY` | No | ImgBB image hosting |
 | `STRIPE_SECRET_KEY` | No | Stripe billing |
 | `STRIPE_WEBHOOK_SECRET` | No | Stripe webhook |
 
-**Important**: Secrets must be set via `wrangler secret put`, NOT via Cloudflare Dashboard (dashboard secrets don't sync with wrangler deployments).
+**Note**: `IMGBB_API_KEY` removed from server secrets — each user provides their own key via connection settings.
 
 ---
 
@@ -310,6 +322,8 @@ Default plans:
 - [x] **Google OAuth working** ✅
 - [x] Dashboard GitHub + Google login buttons
 - [x] AuthCallback page for OAuth token handling
+- [x] **ImgBB per-user API key** ✅ (migration applied, deployed)
+- [x] **CI/CD pipelines** ✅ (ci.yml + deploy.yml, 49 tests passing)
 
 ---
 
@@ -325,17 +339,21 @@ Default plans:
 8. ~~Add missing backend endpoints~~ ✅ Done
 9. ~~Set up GitHub OAuth~~ ✅ Done
 10. ~~Set up Google OAuth~~ ✅ Done
-11. Set up Stripe billing (optional)
-12. Add notification preferences endpoint (optional)
+11. ~~ImgBB per-user API key~~ ✅ Done
+12. Set up Stripe billing (optional)
+13. Add notification preferences endpoint (optional)
+14. Add PUT /api/connections/:id to update existing connection (e.g., add ImgBB key later)
 
 ---
 
 ## Critical Notes
 
 - **API Key Prefix**: Changed from `saas_` to `n2f_` (Node2Flow brand). All new keys will be `n2f_xxx`.
-- **Application Password**: WordPress shows with spaces, must remove before use. `wp-client.ts` handles this automatically.
+- **Application Password**: WordPress shows with spaces, must remove before use. `auth.ts` handles this automatically.
 - **ENCRYPTION_KEY**: Never change after first use - breaks all stored credentials.
 - **TypeScript**: Strict mode enabled, `npx tsc --noEmit` must pass clean.
 - **SSRF Protection**: `wp-client.ts` blocks requests to localhost, private IPs, and cloud metadata endpoints.
 - **OAuth Secrets**: Must use `wrangler secret put`, NOT Cloudflare Dashboard.
 - **OAuth Callbacks**: Must point to Worker (`/api/auth/oauth/{provider}/callback`), NOT Dashboard.
+- **ImgBB Key**: Per-user, stored encrypted in `wp_connections`. No server-wide key needed.
+- **KV Cache**: API key auth cached 1 hour in KV. If user updates ImgBB key, cache must expire first (or clear manually).

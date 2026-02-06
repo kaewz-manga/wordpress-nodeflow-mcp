@@ -26,6 +26,7 @@ interface Connection {
   name: string;
   wp_url: string;
   status: string;
+  has_imgbb_key: boolean;
   created_at: string;
   api_keys: ApiKeyItem[];
 }
@@ -45,6 +46,7 @@ export default function ApiKeys() {
   const [connUrl, setConnUrl] = useState('');
   const [connUsername, setConnUsername] = useState('');
   const [connPassword, setConnPassword] = useState('');
+  const [connImgbbKey, setConnImgbbKey] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
@@ -77,12 +79,14 @@ export default function ApiKeys() {
         wp_url: connUrl,
         wp_username: connUsername,
         wp_password: connPassword,
+        ...(connImgbbKey.trim() && { imgbb_api_key: connImgbbKey.trim() }),
       });
       setShowAddConnection(false);
       setConnName('');
       setConnUrl('');
       setConnUsername('');
       setConnPassword('');
+      setConnImgbbKey('');
       await loadConnections();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create connection');
@@ -210,6 +214,11 @@ export default function ApiKeys() {
                 }`}>
                   {conn.status}
                 </span>
+                {conn.has_imgbb_key && (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                    ImgBB
+                  </span>
+                )}
                 <button
                   onClick={() => { setShowAddKey(conn.id); setNewKeyName(''); setNewKeyValue(null); }}
                   className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg"
@@ -353,6 +362,19 @@ export default function ApiKeys() {
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Generate at WordPress → Users → Application Passwords. Spaces are removed automatically.
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ImgBB API Key <span className="text-gray-400">(optional)</span></label>
+                <input
+                  type="password"
+                  value={connImgbbKey}
+                  onChange={e => setConnImgbbKey(e.target.value)}
+                  placeholder="Your ImgBB API key"
+                  className="input"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Get free API key at api.imgbb.com — required for upload_to_imgbb tool.
                 </p>
               </div>
             </div>

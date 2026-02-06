@@ -567,17 +567,13 @@ export const commentsTools: MCPTool[] = [
 export const storageTools: MCPTool[] = [
   {
     name: 'upload_to_imgbb',
-    description: 'Upload image to ImgBB and get public URLs (supports multi-tenant via header or environment variable)',
+    description: 'Upload image to ImgBB and get public URLs. Requires ImgBB API key configured in your connection settings.',
     inputSchema: {
       type: 'object',
       properties: {
         base64: {
           type: 'string',
           description: 'Base64 encoded image data (accepts with/without prefix, supports JPG/PNG/GIF/WebP)',
-        },
-        apiKey: {
-          type: 'string',
-          description: 'ImgBB API key (optional - can use header x-imgbb-api-key or env IMGBB_API_KEY for multi-tenant)',
         },
         name: {
           type: 'string',

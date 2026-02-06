@@ -150,7 +150,7 @@ async function handleToolCall(
   toolName: string,
   args: any,
   client: WordPressClient,
-  env: Env
+  imgbbApiKey: string | null
 ): Promise<MCPToolResponse> {
   let result: any;
 
@@ -239,11 +239,10 @@ async function handleToolCall(
 
       // Storage (ImgBB)
       case 'upload_to_imgbb': {
-        const apiKey = args.apiKey || env.IMGBB_API_KEY;
-        if (!apiKey) {
-          throw new Error('ImgBB API key not provided. Set IMGBB_API_KEY secret or pass apiKey in arguments.');
+        if (!imgbbApiKey) {
+          throw new Error('ImgBB API key not configured. Add your ImgBB API key when creating a connection.');
         }
-        const imgbbClient = new ImgBBClient(apiKey);
+        const imgbbClient = new ImgBBClient(imgbbApiKey);
         result = await imgbbClient.uploadFromBase64({
           base64: args.base64,
           name: args.name,
@@ -727,6 +726,7 @@ async function handleManagementApi(
           name: c.name,
           wp_url: c.wp_url,
           status: c.status,
+          has_imgbb_key: !!c.imgbb_api_key_encrypted,
           created_at: c.created_at,
           api_keys: apiKeys
             .filter(k => k.connection_id === c.id)
@@ -745,7 +745,7 @@ async function handleManagementApi(
 
   // POST /api/connections
   if (path === '/api/connections' && method === 'POST') {
-    const body = await request.json() as { name: string; wp_url: string; wp_username: string; wp_password: string };
+    const body = await request.json() as { name: string; wp_url: string; wp_username: string; wp_password: string; imgbb_api_key?: string };
     const result = await handleCreateConnection(
       env.DB,
       env.ENCRYPTION_KEY,
@@ -754,7 +754,8 @@ async function handleManagementApi(
       body.name,
       body.wp_url,
       body.wp_username,
-      body.wp_password
+      body.wp_password,
+      body.imgbb_api_key
     );
     return apiResponse(result, result.success ? 201 : 400);
   }
@@ -973,7 +974,7 @@ async function handleMcpRequest(
           password: authContext.connection.wp_password,
         });
 
-        const result = await handleToolCall(toolName, args || {}, client, env);
+        const result = await handleToolCall(toolName, args || {}, client, authContext.connection.imgbb_api_key);
         const responseTime = Date.now() - startTime;
 
         // Check if result contains error

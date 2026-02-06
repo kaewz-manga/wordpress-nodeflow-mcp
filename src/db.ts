@@ -137,17 +137,18 @@ export async function createConnection(
   name: string,
   wpUrl: string,
   wpUsernameEncrypted: string,
-  wpPasswordEncrypted: string
+  wpPasswordEncrypted: string,
+  imgbbApiKeyEncrypted: string | null = null
 ): Promise<WordPressConnection> {
   const id = generateUUID();
   const now = new Date().toISOString();
 
   await db
     .prepare(
-      `INSERT INTO wp_connections (id, user_id, name, wp_url, wp_username_encrypted, wp_password_encrypted, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, 'active', ?, ?)`
+      `INSERT INTO wp_connections (id, user_id, name, wp_url, wp_username_encrypted, wp_password_encrypted, imgbb_api_key_encrypted, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`
     )
-    .bind(id, userId, name, wpUrl, wpUsernameEncrypted, wpPasswordEncrypted, now, now)
+    .bind(id, userId, name, wpUrl, wpUsernameEncrypted, wpPasswordEncrypted, imgbbApiKeyEncrypted, now, now)
     .run();
 
   return {
@@ -157,6 +158,7 @@ export async function createConnection(
     wp_url: wpUrl,
     wp_username_encrypted: wpUsernameEncrypted,
     wp_password_encrypted: wpPasswordEncrypted,
+    imgbb_api_key_encrypted: imgbbApiKeyEncrypted,
     status: 'active',
     last_tested_at: null,
     created_at: now,

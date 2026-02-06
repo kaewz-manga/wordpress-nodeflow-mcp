@@ -28,6 +28,7 @@ export interface WordPressConnection {
   wp_url: string;
   wp_username_encrypted: string;
   wp_password_encrypted: string;
+  imgbb_api_key_encrypted: string | null;
   status: 'active' | 'inactive' | 'error';
   last_tested_at: string | null;
   created_at: string;
@@ -295,6 +296,7 @@ export interface CreateConnectionRequest {
   wp_url: string;
   wp_username: string;
   wp_password: string;
+  imgbb_api_key?: string;
 }
 
 export interface ConnectionResponse {
@@ -332,6 +334,7 @@ export interface AuthContext {
     wp_url: string;
     wp_username: string;
     wp_password: string; // Decrypted
+    imgbb_api_key: string | null; // Decrypted
   };
   apiKey: {
     id: string;
@@ -362,9 +365,6 @@ export interface Env {
   WORDPRESS_URL?: string;
   WORDPRESS_USERNAME?: string;
   WORDPRESS_APP_PASSWORD?: string;
-
-  // ImgBB
-  IMGBB_API_KEY?: string;
 
   // OAuth - GitHub
   GITHUB_CLIENT_ID?: string;

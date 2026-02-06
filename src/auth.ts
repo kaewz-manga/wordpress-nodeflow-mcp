@@ -254,6 +254,7 @@ export async function authenticateMcpRequest(
     wp_url: string;
     wp_username_encrypted: string;
     wp_password_encrypted: string;
+    imgbb_api_key_encrypted: string | null;
     api_key_id: string;
   } | null;
 
@@ -312,6 +313,7 @@ export async function authenticateMcpRequest(
       wp_url: connection.wp_url,
       wp_username_encrypted: connection.wp_username_encrypted,
       wp_password_encrypted: connection.wp_password_encrypted,
+      imgbb_api_key_encrypted: connection.imgbb_api_key_encrypted,
       api_key_id: apiKeyRecord.id,
     };
 
@@ -349,9 +351,13 @@ export async function authenticateMcpRequest(
   // Decrypt WordPress credentials
   let wpUsername: string;
   let wpPassword: string;
+  let imgbbApiKey: string | null = null;
   try {
     wpUsername = await decrypt(cachedData.wp_username_encrypted, env.ENCRYPTION_KEY);
     wpPassword = await decrypt(cachedData.wp_password_encrypted, env.ENCRYPTION_KEY);
+    if (cachedData.imgbb_api_key_encrypted) {
+      imgbbApiKey = await decrypt(cachedData.imgbb_api_key_encrypted, env.ENCRYPTION_KEY);
+    }
   } catch {
     return {
       context: null,
@@ -381,6 +387,7 @@ export async function authenticateMcpRequest(
         wp_url: cachedData.wp_url,
         wp_username: wpUsername,
         wp_password: wpPassword,
+        imgbb_api_key: imgbbApiKey,
       },
       apiKey: {
         id: cachedData.api_key_id,
@@ -410,7 +417,8 @@ export async function handleCreateConnection(
   name: string,
   wpUrl: string,
   wpUsername: string,
-  wpPassword: string
+  wpPassword: string,
+  imgbbApiKey?: string
 ): Promise<ApiResponse> {
   // Validate input
   if (!name || !wpUrl || !wpUsername || !wpPassword) {
@@ -486,9 +494,10 @@ export async function handleCreateConnection(
   // Encrypt WordPress credentials
   const encryptedUsername = await encrypt(wpUsername, encryptionKey);
   const encryptedPassword = await encrypt(cleanPassword, encryptionKey);
+  const encryptedImgbbKey = imgbbApiKey ? await encrypt(imgbbApiKey, encryptionKey) : null;
 
   // Create connection
-  const connection = await createConnection(db, userId, name, wpUrl, encryptedUsername, encryptedPassword);
+  const connection = await createConnection(db, userId, name, wpUrl, encryptedUsername, encryptedPassword, encryptedImgbbKey);
 
   // Generate SaaS API key
   const { key, hash, prefix } = await generateApiKey();
