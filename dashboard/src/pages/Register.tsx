@@ -42,16 +42,18 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-n2f-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center">
-            <Zap className="h-10 w-10 text-primary-600" />
-            <span className="ml-2 text-2xl font-bold text-gray-900">WordPress MCP</span>
+            <div className="bg-n2f-accent p-2 rounded-lg">
+              <Zap className="h-8 w-8 text-white" />
+            </div>
+            <span className="ml-3 text-2xl font-bold text-n2f-text">WordPress MCP</span>
           </Link>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">Create your account</h2>
-          <p className="mt-2 text-gray-600">
+          <h2 className="mt-6 text-3xl font-bold text-n2f-text">Create your account</h2>
+          <p className="mt-2 text-n2f-text-secondary">
             Start with 1,000 free requests per month
           </p>
         </div>
@@ -60,14 +62,14 @@ export default function Register() {
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="flex items-center p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              <div className="flex items-center p-4 bg-red-900/20 border border-red-800 rounded-lg text-red-400">
                 <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="label">
                 Name (optional)
               </label>
               <input
@@ -81,7 +83,7 @@ export default function Register() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="label">
                 Email address
               </label>
               <input
@@ -96,7 +98,7 @@ export default function Register() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="label">
                 Password
               </label>
               <div className="relative">
@@ -112,7 +114,7 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-n2f-text-muted hover:text-n2f-text-secondary"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -122,7 +124,7 @@ export default function Register() {
                   <div
                     key={req.text}
                     className={`flex items-center text-xs ${
-                      req.met ? 'text-green-600' : 'text-gray-400'
+                      req.met ? 'text-green-400' : 'text-n2f-text-muted'
                     }`}
                   >
                     <Check className={`h-3 w-3 mr-1 ${req.met ? 'opacity-100' : 'opacity-0'}`} />
@@ -137,15 +139,15 @@ export default function Register() {
                 id="terms"
                 type="checkbox"
                 required
-                className="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                className="mt-1 rounded border-n2f-border bg-n2f-elevated text-n2f-accent focus:ring-n2f-accent"
               />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
+              <label htmlFor="terms" className="ml-2 text-sm text-n2f-text-secondary">
                 I agree to the{' '}
-                <a href="#" className="text-primary-600 hover:text-primary-500">
+                <a href="#" className="text-n2f-accent hover:text-n2f-accent-light">
                   Terms of Service
                 </a>{' '}
                 and{' '}
-                <a href="#" className="text-primary-600 hover:text-primary-500">
+                <a href="#" className="text-n2f-accent hover:text-n2f-accent-light">
                   Privacy Policy
                 </a>
               </label>
@@ -174,10 +176,10 @@ export default function Register() {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
+                <div className="w-full border-t border-n2f-border" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or sign up with</span>
+                <span className="px-2 bg-n2f-card text-n2f-text-muted">Or sign up with</span>
               </div>
             </div>
 
@@ -207,9 +209,9 @@ export default function Register() {
           </div>
         </div>
 
-        <p className="mt-8 text-center text-sm text-gray-600">
+        <p className="mt-8 text-center text-sm text-n2f-text-secondary">
           Already have an account?{' '}
-          <Link to="/login" className="text-primary-600 hover:text-primary-500 font-medium">
+          <Link to="/login" className="text-n2f-accent hover:text-n2f-accent-light font-medium">
             Sign in
           </Link>
         </p>

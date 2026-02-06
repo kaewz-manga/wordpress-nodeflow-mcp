@@ -118,7 +118,6 @@ export default function Billing() {
 
     try {
       const result = await api.post<{ data: { url: string } }>('/api/billing/checkout', { plan_id: tier });
-      // Redirect to Stripe checkout
       window.location.href = result.data.url;
     } catch (error) {
       console.error('Failed to start checkout:', error);
@@ -141,7 +140,7 @@ export default function Billing() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-n2f-accent"></div>
       </div>
     );
   }
@@ -152,20 +151,20 @@ export default function Billing() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Billing</h1>
-        <p className="text-gray-600">Manage your subscription and payment methods</p>
+        <h1 className="text-2xl font-bold text-n2f-text">Billing</h1>
+        <p className="text-n2f-text-secondary">Manage your subscription and payment methods</p>
       </div>
 
       {/* Current Plan */}
       <div className="card">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Current Plan</h2>
+            <h2 className="text-lg font-semibold text-n2f-text">Current Plan</h2>
             <div className="flex items-center mt-2">
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${TIER_COLORS[data?.subscription.tier || 'free']}`}>
                 {TIER_LABELS[data?.subscription.tier || 'free']}
               </span>
-              <span className="ml-3 text-gray-500">
+              <span className="ml-3 text-n2f-text-muted">
                 {data?.subscription.tier !== 'free' && (
                   <>Renews {formatDate(data?.subscription.billingCycleEnd || '')}</>
                 )}
@@ -180,23 +179,23 @@ export default function Billing() {
         </div>
 
         {/* Usage */}
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-n2f-elevated rounded-lg p-4">
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-600">
+            <span className="text-n2f-text-secondary">
               {formatNumber(data?.subscription.requestsUsed || 0)} / {formatNumber(data?.subscription.requestsLimit || 0)} requests used
             </span>
-            <span className="font-medium">{usagePercent.toFixed(1)}%</span>
+            <span className="font-medium text-n2f-text">{usagePercent.toFixed(1)}%</span>
           </div>
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-2 bg-n2f-bg rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                usagePercent > 90 ? 'bg-red-500' : usagePercent > 70 ? 'bg-orange-500' : 'bg-primary-500'
+                usagePercent > 90 ? 'bg-red-500' : usagePercent > 70 ? 'bg-orange-500' : 'bg-n2f-accent'
               }`}
               style={{ width: `${Math.min(usagePercent, 100)}%` }}
             />
           </div>
           {usagePercent > 80 && (
-            <p className="text-sm text-orange-600 mt-2 flex items-center">
+            <p className="text-sm text-orange-400 mt-2 flex items-center">
               <AlertCircle className="h-4 w-4 mr-1" />
               You're approaching your request limit. Consider upgrading.
             </p>
@@ -207,22 +206,22 @@ export default function Billing() {
       {/* Payment Method */}
       {data?.paymentMethod && (
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Payment Method</h2>
+          <h2 className="text-lg font-semibold text-n2f-text mb-4">Payment Method</h2>
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-12 h-8 bg-gray-100 rounded flex items-center justify-center mr-4">
-                <CreditCard className="h-5 w-5 text-gray-600" />
+              <div className="w-12 h-8 bg-n2f-elevated rounded flex items-center justify-center mr-4">
+                <CreditCard className="h-5 w-5 text-n2f-text-secondary" />
               </div>
               <div>
-                <p className="font-medium text-gray-900 capitalize">
-                  {data.paymentMethod.brand} •••• {data.paymentMethod.last4}
+                <p className="font-medium text-n2f-text capitalize">
+                  {data.paymentMethod.brand} &bull;&bull;&bull;&bull; {data.paymentMethod.last4}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-n2f-text-muted">
                   Expires {data.paymentMethod.expMonth}/{data.paymentMethod.expYear}
                 </p>
               </div>
             </div>
-            <button onClick={handleManageBilling} className="text-primary-600 hover:text-primary-700 text-sm font-medium">
+            <button onClick={handleManageBilling} className="text-n2f-accent hover:text-n2f-accent-light text-sm font-medium">
               Update
             </button>
           </div>
@@ -231,7 +230,7 @@ export default function Billing() {
 
       {/* Plans */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Available Plans</h2>
+        <h2 className="text-lg font-semibold text-n2f-text mb-4">Available Plans</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {plans.map((plan) => {
             const isCurrentPlan = plan.tier === data?.subscription.tier;
@@ -240,10 +239,10 @@ export default function Billing() {
             return (
               <div
                 key={plan.tier}
-                className={`card relative ${plan.popular ? 'ring-2 ring-primary-500' : ''} ${isCurrentPlan ? 'bg-primary-50' : ''}`}
+                className={`card relative ${plan.popular ? 'ring-2 ring-n2f-accent' : ''} ${isCurrentPlan ? 'bg-n2f-accent/5' : ''}`}
               >
                 {plan.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-xs font-medium px-3 py-1 rounded-full">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-n2f-accent text-white text-xs font-medium px-3 py-1 rounded-full">
                     Popular
                   </span>
                 )}
@@ -253,19 +252,19 @@ export default function Billing() {
                   </span>
                 )}
 
-                <h3 className="text-lg font-semibold text-gray-900">{plan.name}</h3>
+                <h3 className="text-lg font-semibold text-n2f-text">{plan.name}</h3>
                 <div className="mt-2 mb-4">
-                  <span className="text-3xl font-bold text-gray-900">${plan.price}</span>
-                  <span className="text-gray-500">/month</span>
+                  <span className="text-3xl font-bold text-n2f-text">${plan.price}</span>
+                  <span className="text-n2f-text-muted">/month</span>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-n2f-text-secondary mb-4">
                   {formatNumber(plan.requests)} requests/month
                 </p>
 
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-center text-sm text-gray-600">
-                      <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                    <li key={feature} className="flex items-center text-sm text-n2f-text-secondary">
+                      <Check className="h-4 w-4 text-green-400 mr-2 flex-shrink-0" />
                       {feature}
                     </li>
                   ))}
@@ -276,7 +275,7 @@ export default function Billing() {
                   disabled={isCurrentPlan || isDowngrade || isUpgrading}
                   className={`btn w-full ${
                     isCurrentPlan
-                      ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                      ? 'bg-n2f-elevated text-n2f-text-muted cursor-not-allowed'
                       : isDowngrade
                       ? 'btn-secondary'
                       : 'btn-primary'
@@ -307,12 +306,12 @@ export default function Billing() {
       </div>
 
       {/* Enterprise */}
-      <div className="card bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+      <div className="card bg-gradient-to-r from-gray-900 to-gray-800 border-0">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center mb-2">
               <Zap className="h-6 w-6 text-yellow-400 mr-2" />
-              <h2 className="text-xl font-bold">Enterprise</h2>
+              <h2 className="text-xl font-bold text-white">Enterprise</h2>
             </div>
             <p className="text-gray-300 mb-4">
               Need unlimited requests, custom SLA, or dedicated support? Contact us for enterprise pricing.
@@ -333,30 +332,30 @@ export default function Billing() {
       {/* Invoices */}
       {data?.invoices && data.invoices.length > 0 && (
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Invoice History</h2>
+          <h2 className="text-lg font-semibold text-n2f-text mb-4">Invoice History</h2>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Date</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Amount</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500">Status</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-500">Invoice</th>
+                <tr className="border-b border-n2f-border">
+                  <th className="text-left py-3 px-4 text-sm font-medium text-n2f-text-muted">Date</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-n2f-text-muted">Amount</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-n2f-text-muted">Status</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-n2f-text-muted">Invoice</th>
                 </tr>
               </thead>
               <tbody>
                 {data.invoices.map((invoice) => (
-                  <tr key={invoice.id} className="border-b border-gray-100 last:border-0">
-                    <td className="py-3 px-4 text-sm text-gray-900">{formatDate(invoice.date)}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{formatCurrency(invoice.amount)}</td>
+                  <tr key={invoice.id} className="border-b border-n2f-border last:border-0">
+                    <td className="py-3 px-4 text-sm text-n2f-text">{formatDate(invoice.date)}</td>
+                    <td className="py-3 px-4 text-sm text-n2f-text">{formatCurrency(invoice.amount)}</td>
                     <td className="py-3 px-4">
                       <span
                         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                           invoice.status === 'paid'
-                            ? 'bg-green-100 text-green-700'
+                            ? 'bg-green-500/10 text-green-400'
                             : invoice.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-red-100 text-red-700'
+                            ? 'bg-yellow-500/10 text-yellow-400'
+                            : 'bg-red-500/10 text-red-400'
                         }`}
                       >
                         {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
@@ -365,7 +364,7 @@ export default function Billing() {
                     <td className="py-3 px-4 text-right">
                       <a
                         href={invoice.pdfUrl}
-                        className="text-primary-600 hover:text-primary-700 inline-flex items-center"
+                        className="text-n2f-accent hover:text-n2f-accent-light inline-flex items-center"
                       >
                         <Download className="h-4 w-4 mr-1" />
                         PDF

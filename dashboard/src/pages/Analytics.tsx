@@ -42,7 +42,7 @@ interface AnalyticsData {
   geographicDistribution: Array<{ region: string; requests: number }>;
 }
 
-const COLORS = ['#0ea5e9', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
+const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
 
 export default function Analytics() {
   const [data, setData] = useState<AnalyticsData | null>(null);
@@ -90,7 +90,7 @@ export default function Analytics() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-n2f-accent"></div>
       </div>
     );
   }
@@ -100,18 +100,18 @@ export default function Analytics() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-600">Deep insights into your API usage</p>
+          <h1 className="text-2xl font-bold text-n2f-text">Analytics</h1>
+          <p className="text-n2f-text-secondary">Deep insights into your API usage</p>
         </div>
-        <div className="flex items-center bg-gray-100 rounded-lg p-1">
+        <div className="flex items-center bg-n2f-elevated rounded-lg p-1">
           {(['7d', '30d', '90d'] as const).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
               className={`px-4 py-2 text-sm rounded-md transition-colors ${
                 period === p
-                  ? 'bg-white shadow text-gray-900'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-n2f-card shadow text-n2f-text'
+                  : 'text-n2f-text-muted hover:text-n2f-text'
               }`}
             >
               {p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : '90 Days'}
@@ -124,8 +124,8 @@ export default function Analytics() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="stat-card">
           <div className="flex items-center justify-between">
-            <Activity className="h-8 w-8 text-primary-500" />
-            <div className={`flex items-center text-sm ${data?.summary.requestsChange && data.summary.requestsChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <Activity className="h-8 w-8 text-n2f-accent" />
+            <div className={`flex items-center text-sm ${data?.summary.requestsChange && data.summary.requestsChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
               {data?.summary.requestsChange && data.summary.requestsChange >= 0 ? <TrendingUp className="h-4 w-4 mr-1" /> : <TrendingDown className="h-4 w-4 mr-1" />}
               {formatPercentage(Math.abs(data?.summary.requestsChange || 0))}
             </div>
@@ -136,8 +136,8 @@ export default function Analytics() {
 
         <div className="stat-card">
           <div className="flex items-center justify-between">
-            <Clock className="h-8 w-8 text-blue-500" />
-            <div className={`flex items-center text-sm ${data?.summary.responseTimeChange && data.summary.responseTimeChange <= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <Clock className="h-8 w-8 text-blue-400" />
+            <div className={`flex items-center text-sm ${data?.summary.responseTimeChange && data.summary.responseTimeChange <= 0 ? 'text-green-400' : 'text-red-400'}`}>
               {data?.summary.responseTimeChange && data.summary.responseTimeChange <= 0 ? <TrendingDown className="h-4 w-4 mr-1" /> : <TrendingUp className="h-4 w-4 mr-1" />}
               {formatPercentage(Math.abs(data?.summary.responseTimeChange || 0))}
             </div>
@@ -148,8 +148,8 @@ export default function Analytics() {
 
         <div className="stat-card">
           <div className="flex items-center justify-between">
-            <AlertTriangle className="h-8 w-8 text-orange-500" />
-            <div className={`flex items-center text-sm ${data?.summary.errorRateChange && data.summary.errorRateChange <= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <AlertTriangle className="h-8 w-8 text-orange-400" />
+            <div className={`flex items-center text-sm ${data?.summary.errorRateChange && data.summary.errorRateChange <= 0 ? 'text-green-400' : 'text-red-400'}`}>
               {data?.summary.errorRateChange && data.summary.errorRateChange <= 0 ? <TrendingDown className="h-4 w-4 mr-1" /> : <TrendingUp className="h-4 w-4 mr-1" />}
               {formatPercentage(Math.abs(data?.summary.errorRateChange || 0))}
             </div>
@@ -159,7 +159,7 @@ export default function Analytics() {
         </div>
 
         <div className="stat-card">
-          <Globe className="h-8 w-8 text-green-500" />
+          <Globe className="h-8 w-8 text-green-400" />
           <div className="stat-value mt-4">{data?.summary.uniqueTools || 0}</div>
           <div className="stat-label">Tools Used</div>
         </div>
@@ -167,26 +167,27 @@ export default function Analytics() {
 
       {/* Requests Over Time */}
       <div className="card">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Requests Over Time</h2>
+        <h2 className="text-lg font-semibold text-n2f-text mb-4">Requests Over Time</h2>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data?.requestsOverTime || []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
               <XAxis dataKey="date" stroke="#6b7280" fontSize={12} />
               <YAxis stroke="#6b7280" fontSize={12} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
+                  backgroundColor: '#0a0b0e',
+                  border: '1px solid #1f2937',
                   borderRadius: '8px',
+                  color: '#f9fafb',
                 }}
               />
               <Legend />
               <Area
                 type="monotone"
                 dataKey="requests"
-                stroke="#0ea5e9"
-                fill="#0ea5e9"
+                stroke="#3b82f6"
+                fill="#3b82f6"
                 fillOpacity={0.2}
                 name="Requests"
               />
@@ -206,21 +207,22 @@ export default function Analytics() {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Tool Usage */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Tool Usage</h2>
+          <h2 className="text-lg font-semibold text-n2f-text mb-4">Tool Usage</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data?.toolUsage || []} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
                 <XAxis type="number" stroke="#6b7280" fontSize={12} />
                 <YAxis type="category" dataKey="tool" stroke="#6b7280" fontSize={10} width={100} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
+                    backgroundColor: '#0a0b0e',
+                    border: '1px solid #1f2937',
                     borderRadius: '8px',
+                    color: '#f9fafb',
                   }}
                 />
-                <Bar dataKey="count" fill="#0ea5e9" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="count" fill="#3b82f6" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -228,7 +230,7 @@ export default function Analytics() {
 
         {/* Response Time Distribution */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Response Time Distribution</h2>
+          <h2 className="text-lg font-semibold text-n2f-text mb-4">Response Time Distribution</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -248,7 +250,14 @@ export default function Analytics() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#0a0b0e',
+                    border: '1px solid #1f2937',
+                    borderRadius: '8px',
+                    color: '#f9fafb',
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -256,7 +265,7 @@ export default function Analytics() {
 
         {/* Errors by Type */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Errors by Type</h2>
+          <h2 className="text-lg font-semibold text-n2f-text mb-4">Errors by Type</h2>
           <div className="space-y-3">
             {data?.errorsByType.map((error, index) => (
               <div key={error.type} className="flex items-center">
@@ -264,8 +273,8 @@ export default function Analytics() {
                   className="w-3 h-3 rounded-full mr-3"
                   style={{ backgroundColor: COLORS[index % COLORS.length] }}
                 />
-                <span className="flex-1 text-sm text-gray-600">{error.type}</span>
-                <span className="text-sm font-medium text-gray-900">{formatNumber(error.count)}</span>
+                <span className="flex-1 text-sm text-n2f-text-secondary">{error.type}</span>
+                <span className="text-sm font-medium text-n2f-text">{formatNumber(error.count)}</span>
               </div>
             ))}
           </div>
@@ -273,17 +282,17 @@ export default function Analytics() {
 
         {/* Geographic Distribution */}
         <div className="card">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Geographic Distribution</h2>
+          <h2 className="text-lg font-semibold text-n2f-text mb-4">Geographic Distribution</h2>
           <div className="space-y-3">
             {data?.geographicDistribution.map((region) => (
               <div key={region.region}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-gray-600">{region.region}</span>
-                  <span className="text-sm font-medium text-gray-900">{formatNumber(region.requests)}</span>
+                  <span className="text-sm text-n2f-text-secondary">{region.region}</span>
+                  <span className="text-sm font-medium text-n2f-text">{formatNumber(region.requests)}</span>
                 </div>
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-2 bg-n2f-elevated rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-primary-500 rounded-full"
+                    className="h-full bg-n2f-accent rounded-full"
                     style={{
                       width: `${(region.requests / (data?.geographicDistribution[0]?.requests || 1)) * 100}%`,
                     }}

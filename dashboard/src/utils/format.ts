@@ -54,8 +54,8 @@ export const TIER_LABELS: Record<string, string> = {
 };
 
 export const TIER_COLORS: Record<string, string> = {
-  free: 'bg-gray-100 text-gray-800',
-  starter: 'bg-blue-100 text-blue-800',
-  pro: 'bg-purple-100 text-purple-800',
-  enterprise: 'bg-green-100 text-green-800',
+  free: 'bg-gray-500/10 text-gray-400',
+  starter: 'bg-blue-500/10 text-blue-400',
+  pro: 'bg-purple-500/10 text-purple-400',
+  enterprise: 'bg-green-500/10 text-green-400',
 };

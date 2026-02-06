@@ -11,25 +11,21 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      // Check for error from OAuth provider
       const errorParam = searchParams.get('error');
       if (errorParam) {
         setError(`OAuth error: ${errorParam}`);
         return;
       }
 
-      // Backend redirects here with token in URL params
       const token = searchParams.get('token');
 
       if (token) {
-        // Save token and refresh user
         localStorage.setItem('token', token);
         await refreshUser();
         navigate('/dashboard');
         return;
       }
 
-      // If no token, something went wrong
       setError('Authentication failed - no token received');
     };
 
@@ -38,9 +34,9 @@ export default function AuthCallback() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-n2f-bg">
         <div className="max-w-md w-full p-6">
-          <div className="flex items-center p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          <div className="flex items-center p-4 bg-red-900/20 border border-red-800 rounded-lg text-red-400">
             <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
             <div>
               <p className="font-medium">Authentication Failed</p>
@@ -59,10 +55,10 @@ export default function AuthCallback() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-n2f-bg">
       <div className="text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600 mx-auto" />
-        <p className="mt-4 text-gray-600">Completing authentication...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-n2f-accent mx-auto" />
+        <p className="mt-4 text-n2f-text-secondary">Completing authentication...</p>
       </div>
     </div>
   );

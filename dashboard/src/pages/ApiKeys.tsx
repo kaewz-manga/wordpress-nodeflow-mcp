@@ -144,7 +144,7 @@ export default function ApiKeys() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-n2f-accent"></div>
       </div>
     );
   }
@@ -154,8 +154,8 @@ export default function ApiKeys() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Connections & API Keys</h1>
-          <p className="text-gray-600">Connect WordPress sites and manage API keys</p>
+          <h1 className="text-2xl font-bold text-n2f-text">Connections & API Keys</h1>
+          <p className="text-n2f-text-secondary">Connect WordPress sites and manage API keys</p>
         </div>
         <button onClick={() => setShowAddConnection(true)} className="btn btn-primary">
           <Plus className="h-4 w-4 mr-2" />
@@ -164,33 +164,33 @@ export default function ApiKeys() {
       </div>
 
       {/* Info Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start">
-        <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+      <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 flex items-start">
+        <AlertCircle className="h-5 w-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
         <div>
-          <p className="text-sm text-blue-800">
+          <p className="text-sm text-blue-300">
             Each connection links to a WordPress site. Create API keys per connection to use with MCP clients.
           </p>
-          <p className="text-sm text-blue-600 mt-1">
-            Use <code className="bg-blue-100 px-1 rounded">Authorization: Bearer YOUR_API_KEY</code> header with <code className="bg-blue-100 px-1 rounded">POST /mcp</code>
+          <p className="text-sm text-blue-400 mt-1">
+            Use <code className="bg-blue-900/40 px-1 rounded">Authorization: Bearer YOUR_API_KEY</code> header with <code className="bg-blue-900/40 px-1 rounded">POST /mcp</code>
           </p>
         </div>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="flex items-center p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        <div className="flex items-center p-4 bg-red-900/20 border border-red-800 rounded-lg text-red-400">
           <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
           {error}
-          <button onClick={() => setError('')} className="ml-auto">&times;</button>
+          <button onClick={() => setError('')} className="ml-auto text-red-400 hover:text-red-300">&times;</button>
         </div>
       )}
 
       {/* Connections List */}
       {connections.length === 0 ? (
         <div className="card text-center py-12">
-          <Link2 className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No connections yet</h3>
-          <p className="text-gray-500 mb-4">Add a WordPress site to get started</p>
+          <Link2 className="h-12 w-12 text-n2f-text-muted mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-n2f-text mb-2">No connections yet</h3>
+          <p className="text-n2f-text-muted mb-4">Add a WordPress site to get started</p>
           <button onClick={() => setShowAddConnection(true)} className="btn btn-primary">
             <Plus className="h-4 w-4 mr-2" />
             Add Connection
@@ -202,33 +202,33 @@ export default function ApiKeys() {
             {/* Connection Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
-                <Globe className="h-5 w-5 text-primary-500 mr-3" />
+                <Globe className="h-5 w-5 text-n2f-accent mr-3" />
                 <div>
-                  <h3 className="font-semibold text-gray-900">{conn.name}</h3>
-                  <p className="text-sm text-gray-500">{conn.wp_url}</p>
+                  <h3 className="font-semibold text-n2f-text">{conn.name}</h3>
+                  <p className="text-sm text-n2f-text-muted">{conn.wp_url}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  conn.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                  conn.status === 'active' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400'
                 }`}>
                   {conn.status}
                 </span>
                 {conn.has_imgbb_key && (
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-500/10 text-purple-400">
                     ImgBB
                   </span>
                 )}
                 <button
                   onClick={() => { setShowAddKey(conn.id); setNewKeyName(''); setNewKeyValue(null); }}
-                  className="p-2 text-primary-600 hover:bg-primary-50 rounded-lg"
+                  className="p-2 text-n2f-accent hover:bg-n2f-elevated rounded-lg"
                   title="Generate API Key"
                 >
                   <Key className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => deleteConnection(conn.id)}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                  className="p-2 text-red-400 hover:bg-red-900/30 rounded-lg"
                   title="Delete Connection"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -238,52 +238,52 @@ export default function ApiKeys() {
 
             {/* API Keys Table */}
             {conn.api_keys.length > 0 ? (
-              <div className="overflow-x-auto border border-gray-200 rounded-lg">
+              <div className="overflow-x-auto border border-n2f-border rounded-lg">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="text-left py-2 px-4 text-xs font-medium text-gray-500">Name</th>
-                      <th className="text-left py-2 px-4 text-xs font-medium text-gray-500">Key</th>
-                      <th className="text-left py-2 px-4 text-xs font-medium text-gray-500">Status</th>
-                      <th className="text-left py-2 px-4 text-xs font-medium text-gray-500">Last Used</th>
-                      <th className="text-right py-2 px-4 text-xs font-medium text-gray-500">Actions</th>
+                    <tr className="bg-n2f-elevated border-b border-n2f-border">
+                      <th className="text-left py-2 px-4 text-xs font-medium text-n2f-text-muted">Name</th>
+                      <th className="text-left py-2 px-4 text-xs font-medium text-n2f-text-muted">Key</th>
+                      <th className="text-left py-2 px-4 text-xs font-medium text-n2f-text-muted">Status</th>
+                      <th className="text-left py-2 px-4 text-xs font-medium text-n2f-text-muted">Last Used</th>
+                      <th className="text-right py-2 px-4 text-xs font-medium text-n2f-text-muted">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {conn.api_keys.map(key => (
-                      <tr key={key.id} className="border-b border-gray-100 last:border-0">
-                        <td className="py-3 px-4 text-sm font-medium text-gray-900">{key.name}</td>
+                      <tr key={key.id} className="border-b border-n2f-border last:border-0">
+                        <td className="py-3 px-4 text-sm font-medium text-n2f-text">{key.name}</td>
                         <td className="py-3 px-4">
                           <div className="flex items-center">
-                            <code className="text-sm text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+                            <code className="text-sm text-n2f-text-secondary bg-n2f-elevated px-2 py-0.5 rounded">
                               {key.prefix}...
                             </code>
                             <button
                               onClick={() => copyToClipboard(key.prefix, key.id)}
-                              className="ml-2 p-1 hover:bg-gray-100 rounded"
+                              className="ml-2 p-1 hover:bg-n2f-elevated rounded"
                             >
                               {copiedKey === key.id ? (
-                                <Check className="h-3 w-3 text-green-500" />
+                                <Check className="h-3 w-3 text-green-400" />
                               ) : (
-                                <Copy className="h-3 w-3 text-gray-400" />
+                                <Copy className="h-3 w-3 text-n2f-text-muted" />
                               )}
                             </button>
                           </div>
                         </td>
                         <td className="py-3 px-4">
                           <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                            key.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                            key.status === 'active' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400'
                           }`}>
                             {key.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-500">
+                        <td className="py-3 px-4 text-sm text-n2f-text-muted">
                           {key.last_used_at ? formatRelativeTime(key.last_used_at) : 'Never'}
                         </td>
                         <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => deleteApiKey(key.id)}
-                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"
+                            className="p-1.5 text-red-400 hover:bg-red-900/30 rounded-lg"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -294,11 +294,11 @@ export default function ApiKeys() {
                 </table>
               </div>
             ) : (
-              <p className="text-sm text-gray-500 text-center py-4 border border-dashed border-gray-200 rounded-lg">
+              <p className="text-sm text-n2f-text-muted text-center py-4 border border-dashed border-n2f-border rounded-lg">
                 No API keys yet.{' '}
                 <button
                   onClick={() => { setShowAddKey(conn.id); setNewKeyName(''); setNewKeyValue(null); }}
-                  className="text-primary-600 hover:underline"
+                  className="text-n2f-accent hover:underline"
                 >
                   Generate one
                 </button>
@@ -310,19 +310,19 @@ export default function ApiKeys() {
 
       {/* Add Connection Modal */}
       {showAddConnection && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Add WordPress Connection</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-n2f-card border border-n2f-border rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 className="text-xl font-bold text-n2f-text mb-4">Add WordPress Connection</h2>
 
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              <div className="mb-4 p-3 bg-red-900/20 border border-red-800 rounded-lg text-red-400 text-sm">
                 {error}
               </div>
             )}
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Connection Name</label>
+                <label className="label">Connection Name</label>
                 <input
                   type="text"
                   value={connName}
@@ -332,7 +332,7 @@ export default function ApiKeys() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">WordPress URL</label>
+                <label className="label">WordPress URL</label>
                 <input
                   type="url"
                   value={connUrl}
@@ -342,7 +342,7 @@ export default function ApiKeys() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <label className="label">Username</label>
                 <input
                   type="text"
                   value={connUsername}
@@ -352,7 +352,7 @@ export default function ApiKeys() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Application Password</label>
+                <label className="label">Application Password</label>
                 <input
                   type="password"
                   value={connPassword}
@@ -360,12 +360,12 @@ export default function ApiKeys() {
                   placeholder="xxxx xxxx xxxx xxxx xxxx xxxx"
                   className="input"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Generate at WordPress → Users → Application Passwords. Spaces are removed automatically.
+                <p className="text-xs text-n2f-text-muted mt-1">
+                  Generate at WordPress &rarr; Users &rarr; Application Passwords. Spaces are removed automatically.
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ImgBB API Key <span className="text-gray-400">(optional)</span></label>
+                <label className="label">ImgBB API Key <span className="text-n2f-text-muted">(optional)</span></label>
                 <input
                   type="password"
                   value={connImgbbKey}
@@ -373,8 +373,8 @@ export default function ApiKeys() {
                   placeholder="Your ImgBB API key"
                   className="input"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Get free API key at api.imgbb.com — required for upload_to_imgbb tool.
+                <p className="text-xs text-n2f-text-muted mt-1">
+                  Get free API key at api.imgbb.com &mdash; required for upload_to_imgbb tool.
                 </p>
               </div>
             </div>
@@ -396,19 +396,19 @@ export default function ApiKeys() {
 
       {/* Generate API Key Modal */}
       {showAddKey && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="bg-n2f-card border border-n2f-border rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+            <h2 className="text-xl font-bold text-n2f-text mb-4">
               {newKeyValue ? 'API Key Created' : 'Generate API Key'}
             </h2>
 
             {newKeyValue ? (
               <div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Copy your API key now — it won't be shown again.
+                <p className="text-sm text-n2f-text-secondary mb-4">
+                  Copy your API key now &mdash; it won't be shown again.
                 </p>
-                <div className="bg-gray-100 rounded-lg p-4 mb-4">
-                  <code className="text-sm break-all">{newKeyValue}</code>
+                <div className="bg-n2f-elevated rounded-lg p-4 mb-4">
+                  <code className="text-sm break-all text-n2f-text">{newKeyValue}</code>
                 </div>
                 <button
                   onClick={() => copyToClipboard(newKeyValue, 'new')}
@@ -426,7 +426,7 @@ export default function ApiKeys() {
               </div>
             ) : (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Key Name</label>
+                <label className="label">Key Name</label>
                 <input
                   type="text"
                   value={newKeyName}

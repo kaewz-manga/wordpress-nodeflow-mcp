@@ -317,7 +317,6 @@ export default function Docs() {
   }
 
   function renderContent(content: string) {
-    // Simple markdown-like rendering
     const lines = content.trim().split('\n');
     const elements: JSX.Element[] = [];
     let inCodeBlock = false;
@@ -330,17 +329,17 @@ export default function Docs() {
           const id = `code-${codeId++}`;
           elements.push(
             <div key={id} className="relative group my-4">
-              <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+              <pre className="bg-black text-green-400 p-4 rounded-lg overflow-x-auto text-sm border border-n2f-border">
                 <code>{codeContent.trim()}</code>
               </pre>
               <button
                 onClick={() => copyCode(codeContent.trim(), id)}
-                className="absolute top-2 right-2 p-2 bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 p-2 bg-n2f-elevated rounded opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 {copiedCode === id ? (
                   <Check className="h-4 w-4 text-green-400" />
                 ) : (
-                  <Copy className="h-4 w-4 text-gray-400" />
+                  <Copy className="h-4 w-4 text-n2f-text-muted" />
                 )}
               </button>
             </div>
@@ -352,40 +351,40 @@ export default function Docs() {
         codeContent += line + '\n';
       } else if (line.startsWith('# ')) {
         elements.push(
-          <h1 key={index} className="text-3xl font-bold text-gray-900 mb-4 mt-8 first:mt-0">
+          <h1 key={index} className="text-3xl font-bold text-n2f-text mb-4 mt-8 first:mt-0">
             {line.slice(2)}
           </h1>
         );
       } else if (line.startsWith('## ')) {
         elements.push(
-          <h2 key={index} className="text-xl font-semibold text-gray-900 mb-3 mt-6">
+          <h2 key={index} className="text-xl font-semibold text-n2f-text mb-3 mt-6">
             {line.slice(3)}
           </h2>
         );
       } else if (line.startsWith('**') && line.endsWith('**')) {
         elements.push(
-          <p key={index} className="font-semibold text-gray-900 mb-2">
+          <p key={index} className="font-semibold text-n2f-text mb-2">
             {line.slice(2, -2)}
           </p>
         );
       } else if (line.startsWith('- ')) {
         elements.push(
-          <li key={index} className="ml-4 text-gray-600 mb-1">
-            {line.slice(2).replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 rounded text-sm">$1</code>')}
+          <li key={index} className="ml-4 text-n2f-text-secondary mb-1">
+            {line.slice(2).replace(/`([^`]+)`/g, '<code class="bg-n2f-elevated px-1 rounded text-sm text-n2f-accent">$1</code>')}
           </li>
         );
       } else if (line.startsWith('|')) {
-        // Simple table handling - skip for now
+        // Skip table rows for now
       } else if (line.trim()) {
         elements.push(
           <p
             key={index}
-            className="text-gray-600 mb-4"
+            className="text-n2f-text-secondary mb-4"
             dangerouslySetInnerHTML={{
               __html: line
-                .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm text-gray-800">$1</code>')
-                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary-600 hover:text-primary-700">$1</a>')
-                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'),
+                .replace(/`([^`]+)`/g, '<code class="bg-n2f-elevated px-1.5 py-0.5 rounded text-sm text-n2f-accent">$1</code>')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-n2f-accent hover:text-blue-300">$1</a>')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong class="text-n2f-text">$1</strong>'),
             }}
           />
         );
@@ -396,20 +395,22 @@ export default function Docs() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-n2f-bg">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
+      <header className="sticky top-0 z-50 bg-n2f-card border-b border-n2f-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <Link to="/" className="flex items-center">
-                <Zap className="h-8 w-8 text-primary-600" />
-                <span className="ml-2 text-xl font-bold text-gray-900">WP MCP Docs</span>
+              <Link to="/" className="flex items-center gap-2">
+                <div className="bg-n2f-accent p-1.5 rounded-lg">
+                  <Zap className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xl font-bold text-n2f-text">WP MCP Docs</span>
               </Link>
             </div>
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-n2f-text-muted" />
                 <input
                   type="text"
                   placeholder="Search docs..."
@@ -428,7 +429,7 @@ export default function Docs() {
 
       <div className="max-w-7xl mx-auto flex">
         {/* Sidebar */}
-        <aside className="w-64 flex-shrink-0 border-r border-gray-200 min-h-[calc(100vh-64px)] sticky top-16 overflow-y-auto">
+        <aside className="w-64 flex-shrink-0 border-r border-n2f-border min-h-[calc(100vh-64px)] sticky top-16 overflow-y-auto">
           <nav className="p-4 space-y-6">
             {docs.map((doc) => (
               <div key={doc.id}>
@@ -439,8 +440,8 @@ export default function Docs() {
                   }}
                   className={`flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                     activeDoc === doc.id
-                      ? 'bg-primary-50 text-primary-700'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-n2f-accent/10 text-n2f-accent'
+                      : 'text-n2f-text-secondary hover:bg-n2f-elevated'
                   }`}
                 >
                   <doc.icon className="h-4 w-4 mr-2" />
@@ -454,8 +455,8 @@ export default function Docs() {
                         onClick={() => setActiveSection(section.id)}
                         className={`flex items-center w-full px-3 py-1.5 text-sm rounded-lg transition-colors ${
                           activeSection === section.id
-                            ? 'text-primary-700 bg-primary-50'
-                            : 'text-gray-500 hover:text-gray-700'
+                            ? 'text-n2f-accent bg-n2f-accent/10'
+                            : 'text-n2f-text-muted hover:text-n2f-text-secondary'
                         }`}
                       >
                         <ChevronRight className={`h-3 w-3 mr-1 transition-transform ${activeSection === section.id ? 'rotate-90' : ''}`} />
@@ -473,14 +474,14 @@ export default function Docs() {
         <main className="flex-1 min-w-0 p-8">
           <div className="max-w-3xl">
             <div className="mb-6">
-              <nav className="flex items-center text-sm text-gray-500">
+              <nav className="flex items-center text-sm text-n2f-text-muted">
                 <span>{currentDoc.title}</span>
                 <ChevronRight className="h-4 w-4 mx-2" />
-                <span className="text-gray-900">{currentSection.title}</span>
+                <span className="text-n2f-text">{currentSection.title}</span>
               </nav>
             </div>
 
-            <article className="prose prose-gray max-w-none">
+            <article className="max-w-none">
               {renderContent(currentSection.content)}
             </article>
           </div>

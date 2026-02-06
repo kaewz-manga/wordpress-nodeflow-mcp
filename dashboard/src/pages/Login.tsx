@@ -53,16 +53,18 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-n2f-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center">
-            <Zap className="h-10 w-10 text-primary-600" />
-            <span className="ml-2 text-2xl font-bold text-gray-900">WordPress MCP</span>
+            <div className="bg-n2f-accent p-2 rounded-lg">
+              <Zap className="h-8 w-8 text-white" />
+            </div>
+            <span className="ml-3 text-2xl font-bold text-n2f-text">WordPress MCP</span>
           </Link>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">Welcome back</h2>
-          <p className="mt-2 text-gray-600">
+          <h2 className="mt-6 text-3xl font-bold text-n2f-text">Welcome back</h2>
+          <p className="mt-2 text-n2f-text-secondary">
             Sign in to your account to continue
           </p>
         </div>
@@ -71,14 +73,14 @@ export default function Login() {
         <div className="card">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="flex items-center p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              <div className="flex items-center p-4 bg-red-900/20 border border-red-800 rounded-lg text-red-400">
                 <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="label">
                 Email address
               </label>
               <input
@@ -93,7 +95,7 @@ export default function Login() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="label">
                 Password
               </label>
               <div className="relative">
@@ -109,7 +111,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-n2f-text-muted hover:text-n2f-text-secondary"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -118,10 +120,10 @@ export default function Login() {
 
             <div className="flex items-center justify-between">
               <label className="flex items-center">
-                <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                <input type="checkbox" className="rounded border-n2f-border bg-n2f-elevated text-n2f-accent focus:ring-n2f-accent" />
+                <span className="ml-2 text-sm text-n2f-text-secondary">Remember me</span>
               </label>
-              <a href="#" className="text-sm text-primary-600 hover:text-primary-500">
+              <a href="#" className="text-sm text-n2f-accent hover:text-n2f-accent-light">
                 Forgot password?
               </a>
             </div>
@@ -149,10 +151,10 @@ export default function Login() {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
+                <div className="w-full border-t border-n2f-border" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                <span className="px-2 bg-n2f-card text-n2f-text-muted">Or continue with</span>
               </div>
             </div>
 
@@ -184,9 +186,9 @@ export default function Login() {
           </div>
         </div>
 
-        <p className="mt-8 text-center text-sm text-gray-600">
+        <p className="mt-8 text-center text-sm text-n2f-text-secondary">
           Don't have an account?{' '}
-          <Link to="/register" className="text-primary-600 hover:text-primary-500 font-medium">
+          <Link to="/register" className="text-n2f-accent hover:text-n2f-accent-light font-medium">
             Sign up for free
           </Link>
         </p>
